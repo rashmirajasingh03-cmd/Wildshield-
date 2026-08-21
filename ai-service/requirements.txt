@@ -1,0 +1,13 @@
+# WildShield AI service dependencies
+# Phase 1: web framework only (lightweight install).
+
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29
+python-dotenv>=1.0
+
+# --- Enabled in Phase 5 (YOLO + OpenCV pipeline) ---
+# Install these when starting Phase 5; they are intentionally commented out
+# so the Phase 1 environment stays small.
+# opencv-python>=4.9
+# ultralytics>=8.2
+# numpy>=1.26

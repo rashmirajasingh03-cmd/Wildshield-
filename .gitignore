@@ -1,0 +1,41 @@
+# ===== Environment / secrets =====
+.env
+.env.local
+*.env
+!.env.example
+
+# ===== Node =====
+node_modules/
+npm-debug.log*
+package-lock.json.bak
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# ===== AI models (large binaries - never commit) =====
+ai-service/models/*.pt
+ai-service/models/*.onnx
+ai-service/models/*.engine
+
+# ===== Uploaded & generated media =====
+backend/uploads/videos/*
+backend/uploads/processed/*
+backend/uploads/snapshots/*
+backend/uploads/reports/*
+!backend/uploads/**/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# ===== Logs =====
+logs/
+*.log
+
+# ===== OS / editor =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

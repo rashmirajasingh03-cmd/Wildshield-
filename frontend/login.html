@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - WildShield AI</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"
+                stroke="#34d399" stroke-width="1.6" fill="rgba(52,211,153,0.08)"/>
+          <path d="M8.5 12l2.2 2.2L15.5 9.5" stroke="#34d399" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        WildShield<span class="ai">&nbsp;AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Back to home</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <h1>Console Login</h1>
+      <p class="sub">Restricted access &mdash; forest department personnel only</p>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">Official email</label>
+          <input type="email" id="email" name="email"
+                 placeholder="officer@forest.gov" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+                 placeholder="••••••••" autocomplete="current-password" required minlength="8" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign in</button>
+        <div class="form-msg" id="formMsg" role="alert"></div>
+      </form>
+
+      <div class="auth-foot">
+        Roles: ADMIN &middot; FOREST_OFFICIAL &middot; VIEWER<br />
+        Accounts are issued by the system administrator.
+      </div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
