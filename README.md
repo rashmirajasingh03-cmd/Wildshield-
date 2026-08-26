@@ -10,7 +10,7 @@ endangered wildlife.
 > integrations. All AI findings are decision-support signals with confidence
 > scores and must be verified by authorized personnel.
 
-## Status: PHASE 1 - Project setup & service shells
+## Status: PHASE 3 - Authentication (JWT/bcrypt/roles)
 
 | Component | State |
 | --- | --- |
@@ -19,7 +19,7 @@ endangered wildlife.
 | Python FastAPI service + `/health` | Done (Phase 1) |
 | MongoDB connection layer | Done (Phase 1) |
 | Docker Compose (mongo + backend + ai) | Done (Phase 1) |
-| Auth (JWT/bcrypt/roles) | Phase 3 |
+| Auth (JWT/bcrypt/roles) | Done (Phase 3) |
 | Video upload & storage | Phase 4 |
 | YOLO detection pipeline | Phase 5 |
 | Threat classification | Phase 6 |
@@ -90,7 +90,18 @@ Any of:
 The backend starts even without MongoDB (degraded mode) so frontend/API work
 is never blocked during development.
 
-### 4. Docker Compose (all-in-one)
+### 4. Seed admin user (Phase 3)
+
+```powershell
+cd backend
+npm run seed
+```
+
+Default admin credentials (change after first login):
+- Email: `admin@wildshield.gov`
+- Password: `WildShield@2026`
+
+### 5. Docker Compose (all-in-one)
 
 ```powershell
 docker compose up --build

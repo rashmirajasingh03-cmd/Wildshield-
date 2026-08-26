@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analyses - WildShield AI</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"
+                stroke="#34d399" stroke-width="1.6" fill="rgba(52,211,153,0.08)"/>
+          <path d="M8.5 12l2.2 2.2L15.5 9.5" stroke="#34d399" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        WildShield<span class="ai">&nbsp;AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="upload.html">Upload</a>
+        <span class="user-info" id="userInfo"></span>
+        <button class="btn btn-ghost" id="logoutBtn">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:2rem;padding-bottom:3rem;">
+    <h1>Video Analyses</h1>
+    <p class="sub" style="margin-bottom:1.5rem;">Review AI-powered threat detection results</p>
+
+    <div id="analysesList" class="analyses-list">
+      <p class="muted">Loading analyses...</p>
+    </div>
+
+    <div id="pagination" class="pagination" style="display:none;">
+      <button class="btn btn-ghost btn-sm" id="prevPage">Previous</button>
+      <span id="pageInfo"></span>
+      <button class="btn btn-ghost btn-sm" id="nextPage">Next</button>
+    </div>
+
+    <!-- Detail view -->
+    <div id="detailView" style="display:none;">
+      <button class="btn btn-ghost" id="backToList" style="margin-bottom:1rem;">&larr; Back to list</button>
+      <div class="detail-card" id="detailCard">
+        <p class="muted">Loading...</p>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:2rem;">
+      <strong>Disclaimer:</strong> All AI detections are probabilistic. Confidence scores represent the model's estimate and must be verified by authorized personnel.
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/analysis.js"></script>
+</body>
+</html>

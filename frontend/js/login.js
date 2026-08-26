@@ -1,24 +1,32 @@
 /**
- * Login page logic.
- * Phase 1: posts to /api/auth/login which is an intentional stub (HTTP 501)
- * until real JWT auth lands in Phase 3. The UI communicates this honestly
- * instead of pretending to authenticate.
+ * Login page logic - Phase 3: Real JWT authentication.
  */
 (function () {
-  const form = document.getElementById('loginForm');
-  const btn = document.getElementById('loginBtn');
-  const msg = document.getElementById('formMsg');
+  var form = document.getElementById('loginForm');
+  var btn = document.getElementById('loginBtn');
+  var msg = document.getElementById('formMsg');
 
   function show(kind, text) {
     msg.className = 'form-msg ' + kind;
     msg.textContent = text;
   }
 
+  var token = localStorage.getItem('wildshield.token');
+  if (token) {
+    fetch(window.WildShield.API_BASE + '/auth/me', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+      .then(function (res) {
+        if (res.ok) window.location.href = 'dashboard.html';
+      })
+      .catch(function () {});
+  }
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
 
     if (!email || !password) {
       show('error', 'Please enter both email and password.');
@@ -33,31 +41,30 @@
     btn.textContent = 'Signing in...';
 
     try {
-      const res = await fetch(window.WildShield.API_BASE + '/auth/login', {
+      var res = await fetch(window.WildShield.API_BASE + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email, password: password }),
       });
 
-      if (res.status === 501) {
-        show(
-          'info',
-          'Authentication is not implemented yet - it arrives in Phase 3 of the build plan. This page is complete and will connect automatically.'
-        );
-      } else if (res.ok) {
-        // Real handler will be added in Phase 3 (JWT storage + redirect)
-        const data = await res.json();
-        show('info', 'Login succeeded. Redirect is implemented in Phase 3.');
+      var data = await res.json();
+
+      if (res.ok && data.token) {
+        localStorage.setItem('wildshield.token', data.token);
+        localStorage.setItem('wildshield.user', JSON.stringify(data.user));
+        show('success', 'Login successful. Redirecting...');
+        setTimeout(function () {
+          window.location.href = 'dashboard.html';
+        }, 500);
       } else if (res.status === 401 || res.status === 400) {
-        const data = await res.json().catch(function () { return {}; });
         show('error', data.message || 'Invalid credentials.');
       } else {
-        show('error', 'Unexpected server response (HTTP ' + res.status + ').');
+        show('error', data.message || 'Unexpected server response.');
       }
     } catch (err) {
       show(
         'error',
-        'Cannot reach the backend API. Start it with "npm start" inside backend/ (default http://localhost:5000).'
+        'Cannot reach the backend API. Start it with "npm start" inside backend/.'
       );
     } finally {
       btn.disabled = false;

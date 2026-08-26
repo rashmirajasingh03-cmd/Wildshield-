@@ -2,13 +2,16 @@ const express = require('express');
 
 const healthRoutes = require('./healthRoutes');
 const authRoutes = require('./authRoutes');
+const videoRoutes = require('./videoRoutes');
+const analysisRoutes = require('./analysisRoutes');
+const reportRoutes = require('./reportRoutes');
 
 const router = express.Router();
 
-// Phase 1: health + auth stubs.
-// Later phases mount: /videos, /analysis, /detections, /reports,
-// /wildlife, /dashboard (see section 22 of the spec).
 router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
+router.use('/videos', videoRoutes);
+router.use('/analysis', analysisRoutes);
+router.use('/reports', reportRoutes);
 
 module.exports = router;

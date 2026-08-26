@@ -1,14 +1,8 @@
 /**
- * WildShield AI - Backend API server (Phase 1)
+ * WildShield AI - Backend API server
  *
- * Responsibilities in this phase:
- *  - Express app with security middleware (Helmet, CORS, rate limiting)
- *  - Health check endpoint (/api/health)
- *  - Auth stub endpoints (real JWT auth arrives in Phase 3)
- *  - MongoDB connection layer (graceful degraded mode if DB is down)
- *  - Optional static hosting of the frontend for single-origin demos
- *
- * Video upload, analysis jobs and AI integration arrive in Phases 4-7.
+ * Express app with security middleware, health check, auth,
+ * video upload, analysis jobs, and AI integration.
  */
 const path = require('path');
 const express = require('express');
@@ -24,6 +18,7 @@ const {
   errorHandler,
 } = require('./middleware/security');
 const routes = require('./routes');
+const { ensureDirectories } = require('./services/storage');
 
 const app = express();
 
@@ -52,7 +47,7 @@ app.use(errorHandler);
 let server;
 
 async function start() {
-  // DB connect is non-blocking: Phase 1 must start even without MongoDB
+  ensureDirectories();
   await connectDB();
 
   server = app.listen(env.port, () => {

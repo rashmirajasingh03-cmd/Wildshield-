@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - WildShield AI</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"
+                stroke="#34d399" stroke-width="1.6" fill="rgba(52,211,153,0.08)"/>
+          <path d="M8.5 12l2.2 2.2L15.5 9.5" stroke="#34d399" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        WildShield<span class="ai">&nbsp;AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="upload.html">Upload</a>
+        <a href="analysis.html">Analyses</a>
+        <span class="user-info" id="userInfo"></span>
+        <button class="btn btn-ghost" id="logoutBtn">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:2rem;padding-bottom:3rem;">
+    <div class="dash-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="sub" style="margin:0;">Welcome back, <strong id="userName"></strong></p>
+      </div>
+      <div class="dash-actions">
+        <a href="upload.html" class="btn btn-primary">Upload Video</a>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <span class="stat-label">Total Videos</span>
+        <span class="stat-value" id="statVideos">--</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total Analyses</span>
+        <span class="stat-value" id="statAnalyses">--</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Threats Detected</span>
+        <span class="stat-value" id="statThreats">--</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">System Status</span>
+        <span class="stat-value" id="statStatus">--</span>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-panel">
+        <h3>Recent Analyses</h3>
+        <div id="recentAnalyses" class="recent-list">
+          <p class="muted">Loading...</p>
+        </div>
+      </div>
+      <div class="dash-panel">
+        <h3>Account Details</h3>
+        <div class="info-box">
+          <p><strong>Email:</strong> <span id="userEmail"></span></p>
+          <p><strong>Role:</strong> <span id="userRole"></span></p>
+          <p><strong>Member since:</strong> <span id="userSince"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:2rem;">
+      <strong>Disclaimer:</strong> AI analysis results are decision-support signals only. All findings must be verified by authorized personnel before taking action.
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Video - WildShield AI</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"
+                stroke="#34d399" stroke-width="1.6" fill="rgba(52,211,153,0.08)"/>
+          <path d="M8.5 12l2.2 2.2L15.5 9.5" stroke="#34d399" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        WildShield<span class="ai">&nbsp;AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="analysis.html">Analyses</a>
+        <span class="user-info" id="userInfo"></span>
+        <button class="btn btn-ghost" id="logoutBtn">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:2rem;padding-bottom:3rem;">
+    <h1>Upload Surveillance Video</h1>
+    <p class="sub" style="margin-bottom:1.5rem;">Upload video footage for AI-powered threat analysis</p>
+
+    <div class="upload-card" id="uploadCard">
+      <form id="uploadForm" enctype="multipart/form-data" novalidate>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-inner">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            <p class="drop-text">Drag & drop a video file here</p>
+            <p class="drop-sub">or click to browse</p>
+            <input type="file" id="videoFile" name="video" accept="video/*" hidden />
+          </div>
+        </div>
+
+        <div class="file-info" id="fileInfo" style="display:none;">
+          <span class="file-name" id="fileName"></span>
+          <span class="file-size" id="fileSize"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="removeFile">Remove</button>
+        </div>
+
+        <div class="field">
+          <label for="tags">Tags (comma separated)</label>
+          <input type="text" id="tags" name="tags" placeholder="e.g. night-vision, zone-A, patrol" />
+        </div>
+
+        <div class="field">
+          <label for="notes">Notes</label>
+          <input type="text" id="notes" name="notes" placeholder="Optional notes about this footage" maxlength="500" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="uploadBtn" disabled>
+          Upload & Analyze
+        </button>
+
+        <div class="form-msg" id="formMsg" role="alert"></div>
+      </form>
+    </div>
+
+    <div id="uploadResult" style="display:none;">
+      <div class="upload-success">
+        <h2>Upload Complete</h2>
+        <p id="uploadResultMsg"></p>
+        <div class="dash-actions" style="margin-top:1rem;">
+          <a href="dashboard.html" class="btn btn-ghost">Back to Dashboard</a>
+          <button class="btn btn-primary" id="analyzeBtn">Start Analysis</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:2rem;">
+      <strong>Accepted formats:</strong> MP4, AVI, MOV, MKV, WebM, FLV, WMV. Maximum file size: <span id="maxSize">200</span>MB.
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/upload.js"></script>
+</body>
+</html>

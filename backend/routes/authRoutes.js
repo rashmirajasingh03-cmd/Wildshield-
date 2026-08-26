@@ -1,11 +1,34 @@
 const express = require('express');
-const { loginStub, meStub, logoutStub } = require('../controllers/authController');
+const {
+  register,
+  login,
+  getMe,
+  updateProfile,
+  listUsers,
+  updateUserRole,
+  deactivateUser,
+} = require('../controllers/authController');
+const { authenticate, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Placeholder endpoints - replaced by real JWT auth in Phase 3
-router.post('/login', loginStub);
-router.get('/me', meStub);
-router.post('/logout', logoutStub);
+router.post('/register', authenticate, authorize('ADMIN'), register);
+router.post('/login', login);
+router.get('/me', authenticate, getMe);
+router.patch('/me', authenticate, updateProfile);
+
+router.get('/users', authenticate, authorize('ADMIN'), listUsers);
+router.patch(
+  '/users/:id/role',
+  authenticate,
+  authorize('ADMIN'),
+  updateUserRole
+);
+router.delete(
+  '/users/:id',
+  authenticate,
+  authorize('ADMIN'),
+  deactivateUser
+);
 
 module.exports = router;
