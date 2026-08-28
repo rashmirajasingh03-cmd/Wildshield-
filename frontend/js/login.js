@@ -1,5 +1,6 @@
 /**
- * Login page logic - Phase 3: Real JWT authentication.
+ * Login page logic - real JWT authentication.
+ * No auto-redirect on stale tokens. User must always authenticate explicitly.
  */
 (function () {
   var form = document.getElementById('loginForm');
@@ -11,29 +12,24 @@
     msg.textContent = text;
   }
 
-  var token = localStorage.getItem('wildshield.token');
-  if (token) {
-    fetch(window.WildShield.API_BASE + '/auth/me', {
-      headers: { Authorization: 'Bearer ' + token },
-    })
-      .then(function (res) {
-        if (res.ok) window.location.href = 'dashboard.html';
-      })
-      .catch(function () {});
+  function hideMsg() {
+    msg.className = 'form-msg';
+    msg.textContent = '';
   }
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+    hideMsg();
 
     var email = document.getElementById('email').value.trim();
     var password = document.getElementById('password').value;
 
-    if (!email || !password) {
-      show('error', 'Please enter both email and password.');
+    if (!email) {
+      show('error', 'Email is required.');
       return;
     }
-    if (password.length < 8) {
-      show('error', 'Password must be at least 8 characters.');
+    if (!password) {
+      show('error', 'Password is required.');
       return;
     }
 
@@ -52,14 +48,12 @@
       if (res.ok && data.token) {
         localStorage.setItem('wildshield.token', data.token);
         localStorage.setItem('wildshield.user', JSON.stringify(data.user));
-        show('success', 'Login successful. Redirecting...');
+        show('info', 'Login successful. Redirecting...');
         setTimeout(function () {
           window.location.href = 'dashboard.html';
-        }, 500);
-      } else if (res.status === 401 || res.status === 400) {
-        show('error', data.message || 'Invalid credentials.');
+        }, 400);
       } else {
-        show('error', data.message || 'Unexpected server response.');
+        show('error', data.message || 'Invalid credentials.');
       }
     } catch (err) {
       show(

@@ -20,6 +20,8 @@ class Detection:
     bbox: dict  # {x1, y1, x2, y2}
     frame_index: int
     timestamp: float  # seconds
+    threatLevel: str = "NONE"
+    threatCategory: str = "observed_object"
 
 
 @dataclass
@@ -43,6 +45,42 @@ class Detector:
     @property
     def is_loaded(self) -> bool:
         return self._model is not None
+
+    def get_classes(self) -> list:
+        if not self.is_loaded:
+            return []
+        try:
+            return list(self._model.names.values())
+        except Exception:
+            return []
+
+    def handles_labels(self) -> dict:
+        """Reports whether the current model can detect key wildlife/threat labels."""
+        classes = {c.lower() for c in self.get_classes()}
+        report = {
+            "human": "person" in classes,
+            "wildlife_animals": [c for c in self.get_classes() if c in [
+                "bird", "cat", "dog", "horse", "sheep", "cow",
+                "elephant", "bear", "zebra", "giraffe",
+            ]],
+            "primate_monkey_baboon": bool(
+                classes & {"monkey", "baboon", "ape", "gorilla", "chimpanzee"}
+            ),
+            "weapons": [c for c in self.get_classes() if c.lower() in {
+                "knife", "gun", "rifle", "pistol", "shotgun", "sword", "axe",
+                "machete", "hatchet",
+            }],
+            "projectiles_arrows_bows": [c for c in self.get_classes() if c.lower() in {
+                "arrow", "bow", "crossbow", "spear", "javelin", "bow_and_arrow",
+            }],
+            "traps_snares": [c for c in self.get_classes() if c.lower() in {
+                "trap", "snare", "net", "cage", "snares", "leg_hold_trap",
+            }],
+            "environmental_fire": [c for c in self.get_classes() if c.lower() in {
+                "fire", "flame", "smoke", "fire_flames", "burning",
+            }],
+        }
+        return report
 
     def detect(
         self, frame: np.ndarray, frame_index: int = 0, timestamp: float = 0.0

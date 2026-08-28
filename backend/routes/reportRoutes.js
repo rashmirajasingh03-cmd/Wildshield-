@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const { authenticate } = require('../middleware/auth');
 const Analysis = require('../models/Analysis');
 const Report = require('../models/Report');
@@ -29,25 +30,14 @@ router.post('/:analysisId', async (req, res, next) => {
   }
 });
 
-router.get('/:analysisId', async (req, res, next) => {
+// Download by analysisId (latest report for that analysis)
+router.get('/download/:analysisId', async (req, res, next) => {
   try {
-    const reports = await Report.find({ analysisId: req.params.analysisId })
-      .sort('-createdAt')
-      .lean();
-    res.status(200).json({ success: true, reports });
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.get('/download/:reportId', async (req, res, next) => {
-  try {
-    const report = await Report.findById(req.params.reportId);
+    const report = await Report.findOne({ analysisId: req.params.analysisId })
+      .sort('-createdAt');
     if (!report) {
-      return res.status(404).json({ success: false, message: 'Report not found.' });
+      return res.status(404).json({ success: false, message: 'No report found for this analysis.' });
     }
-
-    const fs = require('fs');
     if (!fs.existsSync(report.path)) {
       return res.status(404).json({ success: false, message: 'Report file not found on disk.' });
     }
@@ -55,6 +45,17 @@ router.get('/download/:reportId', async (req, res, next) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${report.filename}"`);
     fs.createReadStream(report.path).pipe(res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:analysisId', async (req, res, next) => {
+  try {
+    const reports = await Report.find({ analysisId: req.params.analysisId })
+      .sort('-createdAt')
+      .lean();
+    res.status(200).json({ success: true, reports });
   } catch (err) {
     next(err);
   }

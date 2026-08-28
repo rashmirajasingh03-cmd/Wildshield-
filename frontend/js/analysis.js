@@ -6,6 +6,8 @@
   var userStr = localStorage.getItem('wildshield.user');
 
   if (!token || !userStr) {
+    localStorage.removeItem('wildshield.token');
+    localStorage.removeItem('wildshield.user');
     window.location.href = 'login.html';
     return;
   }
@@ -14,6 +16,8 @@
   try {
     user = JSON.parse(userStr);
   } catch (e) {
+    localStorage.removeItem('wildshield.token');
+    localStorage.removeItem('wildshield.user');
     window.location.href = 'login.html';
     return;
   }
@@ -22,16 +26,34 @@
   var headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
   var currentPage = 1;
 
-  document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
+  // Validate token with backend before rendering
+  fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+    .then(function (res) {
+      if (!res.ok) throw new Error('Invalid');
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data.success || !data.user) throw new Error('Invalid');
+      user = data.user;
+      localStorage.setItem('wildshield.user', JSON.stringify(user));
+      document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
+      initPage();
+    })
+    .catch(function () {
+      localStorage.removeItem('wildshield.token');
+      localStorage.removeItem('wildshield.user');
+      window.location.href = 'login.html';
+    });
 
-  // Check if we have a detail view via query param
-  var params = new URLSearchParams(window.location.search);
-  var detailId = params.get('id');
+  function initPage() {
+    var params = new URLSearchParams(window.location.search);
+    var detailId = params.get('id');
 
-  if (detailId) {
-    showDetail(detailId);
-  } else {
-    loadList();
+    if (detailId) {
+      showDetail(detailId);
+    } else {
+      loadList();
+    }
   }
 
   function loadList(page) {
@@ -136,15 +158,41 @@
     var summary = analysis.summary || {};
     var detections = analysis.detections || [];
 
+    var statusClass = 'error';
+    var statusText = analysis.status;
+    if (analysis.status === 'completed') { statusClass = 'ok'; statusText = 'COMPLETED'; }
+    else if (analysis.status === 'processing') { statusClass = 'pending'; statusText = 'PROCESSING'; }
+    else if (analysis.status === 'queued') { statusClass = 'pending'; statusText = 'QUEUED'; }
+    else if (analysis.status === 'failed') { statusClass = 'error'; statusText = 'FAILED'; }
+
     var html =
       '<h2>' + videoName + '</h2>' +
       '<div class="detail-meta">' +
-        '<span class="status-chip ' + (analysis.status === 'completed' ? 'ok' : 'error') + '"><span class="status-dot"></span>' + analysis.status + '</span>' +
+        '<span class="status-chip ' + statusClass + '"><span class="status-dot"></span>' + statusText + '</span>' +
         '<span>Requested by: ' + (analysis.requestedBy ? analysis.requestedBy.name : 'Unknown') + '</span>' +
         '<span>Date: ' + new Date(analysis.createdAt).toLocaleString() + '</span>' +
         (analysis.processingTimeMs ? '<span>Processing time: ' + Math.round(analysis.processingTimeMs) + 'ms</span>' : '') +
-      '</div>' +
-      '<div class="detail-section">' +
+      '</div>';
+
+    // Show error prominently when failed
+    if (analysis.status === 'failed') {
+      html += '<div class="form-msg error" style="display:block;">' +
+        '<strong>Analysis failed:</strong> ' + (analysis.error || 'Unknown error occurred while processing the video.') +
+        '</div>';
+      card.innerHTML = html;
+      return;
+    }
+
+    // Show processing note
+    if (analysis.status === 'queued' || analysis.status === 'processing') {
+      html += '<div class="notice" style="margin-top:1rem;">' +
+        '<strong>Analysis in progress.</strong> The video is being processed by the AI service. ' +
+        'Please check back shortly, or navigate to the list and reload.</div>';
+      card.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="detail-section">' +
         '<h3>Summary</h3>' +
         '<div class="summary-grid">' +
           '<div class="summary-item"><span class="summary-label">Total Detections</span><span class="summary-value">' + (summary.totalDetections || 0) + '</span></div>' +
@@ -165,25 +213,28 @@
     if (detections.length > 0) {
       html += '<div class="detail-section"><h3>Detections (' + detections.length + ')</h3>';
       html += '<div class="detections-table"><table><thead><tr>' +
-        '<th>Label</th><th>Confidence</th><th>Threat</th><th>Category</th><th>Frame</th>' +
+        '<th>Label</th><th>Confidence</th><th>Category</th><th>Frame</th>' +
         '</tr></thead><tbody>';
 
       var sorted = detections.slice().sort(function (a, b) {
-        var order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, NONE: 4 };
-        return (order[a.threatLevel] || 4) - (order[b.threatLevel] || 4);
+        return b.confidence - a.confidence;
       });
 
       sorted.forEach(function (d) {
+        var threat = d.threatLevel || 'NONE';
         html += '<tr>' +
           '<td>' + d.label + '</td>' +
           '<td>' + (d.confidence * 100).toFixed(1) + '%</td>' +
-          '<td><span class="badge badge-' + (d.threatLevel || 'none').toLowerCase() + '">' + (d.threatLevel || 'NONE') + '</span></td>' +
-          '<td>' + (d.threatCategory || '-') + '</td>' +
+          '<td><span class="badge badge-' + threat.toLowerCase() + '">' + (d.threatCategory || 'observed') + '</span></td>' +
           '<td>' + d.frameIndex + '</td>' +
           '</tr>';
       });
 
       html += '</tbody></table></div></div>';
+    } else {
+      html += '<div class="notice" style="margin-top:1rem;">' +
+        '<strong>No detections found.</strong> The AI model did not detect any objects in this video above the confidence threshold. ' +
+        'This can happen if the video has low clarity, the objects are not in the model\'s training classes, or quality is poor.</div>';
     }
 
     if (analysis.status === 'completed' && analysis.reportPath) {

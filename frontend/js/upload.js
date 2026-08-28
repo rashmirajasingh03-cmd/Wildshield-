@@ -6,6 +6,8 @@
   var userStr = localStorage.getItem('wildshield.user');
 
   if (!token || !userStr) {
+    localStorage.removeItem('wildshield.token');
+    localStorage.removeItem('wildshield.user');
     window.location.href = 'login.html';
     return;
   }
@@ -14,21 +16,71 @@
   try {
     user = JSON.parse(userStr);
   } catch (e) {
+    localStorage.removeItem('wildshield.token');
+    localStorage.removeItem('wildshield.user');
     window.location.href = 'login.html';
     return;
   }
 
-  if (user.role === 'VIEWER') {
-    window.location.href = 'dashboard.html';
-    return;
-  }
-
   var API = window.WildShield.API_BASE;
+
+  // Validate token with backend before rendering
+  fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+    .then(function (res) {
+      if (!res.ok) throw new Error('Invalid');
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data.success || !data.user) throw new Error('Invalid');
+      user = data.user;
+      localStorage.setItem('wildshield.user', JSON.stringify(user));
+      if (user.role === 'VIEWER') {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+      document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
+    })
+    .catch(function () {
+      localStorage.removeItem('wildshield.token');
+      localStorage.removeItem('wildshield.user');
+      window.location.href = 'login.html';
+    });
+
   var headers = { Authorization: 'Bearer ' + token };
   var selectedFile = null;
   var uploadedVideoId = null;
 
-  document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
+  // Load model capability info
+  fetch(API + '/health')
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data.aiService && data.aiService.reachable) {
+        var h = data.aiService.handles || {};
+        var parts = [];
+        if (data.aiService.modelLoaded) {
+          parts.push('YOLO model loaded (' + (data.aiService.modelClasses || '?') + ' classes)');
+          if (h.human) parts.push('human detection: yes');
+          if (h.wildlife_animals && h.wildlife_animals.length) parts.push('wildlife: ' + h.wildlife_animals.join(', '));
+          if (h.primate_monkey_baboon) parts.push('primate/monkey/baboon: supported');
+          else parts.push('primate/monkey/baboon: NOT supported by current model');
+          if (h.weapons && h.weapons.length) parts.push('weapons: ' + h.weapons.join(', '));
+          else parts.push('weapons: NONE supported');
+          if (h.projectiles_arrows_bows) parts.push('arrows/bows: supported');
+          else parts.push('arrows/bows: NOT supported');
+        } else {
+          parts.push('Model NOT loaded');
+        }
+        document.getElementById('modelInfo').textContent = parts.join(' · ') +
+          '. Detecting threats like baboons, arrows, guns or traps requires a custom-trained model placed at ai-service/models/.';
+      } else if (data.aiService && !data.aiService.reachable) {
+        document.getElementById('modelInfo').textContent = 'AI service unreachable. Analysis will fail until it runs on port 8000.';
+      } else {
+        document.getElementById('modelInfo').textContent = 'Unknown model status.';
+      }
+    })
+    .catch(function () {
+      document.getElementById('modelInfo').textContent = 'Could not check model status.';
+    });
 
   // Drop zone
   var dropZone = document.getElementById('dropZone');
@@ -143,7 +195,10 @@
 
     fetch(API + '/analysis/run', {
       method: 'POST',
-      headers: headers,
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ videoId: uploadedVideoId }),
     })
       .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })

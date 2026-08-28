@@ -41,7 +41,7 @@ exports.startAnalysis = async (req, res, next) => {
     await video.save();
 
     // Dispatch to AI service asynchronously
-    dispatchToAI(analysis._id, video).catch((err) => {
+    dispatchToAI(analysis._id, video, analysis.config).catch((err) => {
       console.error('[analysis] AI dispatch failed:', err.message);
     });
 
@@ -55,25 +55,32 @@ exports.startAnalysis = async (req, res, next) => {
   }
 };
 
-async function dispatchToAI(analysisId, video) {
+async function dispatchToAI(analysisId, video, config) {
+  const Analysis = require('../models/Analysis');
   try {
     await Analysis.findByIdAndUpdate(analysisId, { status: 'processing' });
     await Video.findByIdAndUpdate(video._id, { status: 'processing' });
+
+    const thresholds = config || {
+      confidenceThreshold: 0.4,
+      iouThreshold: 0.45,
+      frameInterval: 10,
+    };
 
     const response = await axios.post(
       `${env.aiServiceUrl}/analyze/video`,
       {
         analysis_id: analysisId.toString(),
         video_path: video.path,
-        confidence_threshold: 0.4,
-        iou_threshold: 0.45,
-        frame_interval: 10,
+        confidence_threshold: thresholds.confidenceThreshold,
+        iou_threshold: thresholds.iouThreshold,
+        frame_interval: thresholds.frameInterval,
       },
       { timeout: 300000 }
     );
 
-    if (response.data && response.data.detections) {
-      const detections = response.data.detections;
+    if (response.status === 200 && response.data) {
+      const detections = response.data.detections || [];
       const uniqueLabels = [...new Set(detections.map((d) => d.label))];
       const threatLevels = detections.map((d) => d.threatLevel || 'NONE');
       const threatPriority = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE'];
@@ -84,40 +91,51 @@ async function dispatchToAI(analysisId, video) {
         }
       }
 
+      const threatsFound = detections.filter(
+        (d) => d.threatLevel === 'CRITICAL' || d.threatLevel === 'HIGH' || d.threatLevel === 'MEDIUM'
+      ).length;
+
+      const threatEvents = response.data.summary && response.data.summary.threat_events
+        ? response.data.summary.threat_events
+        : [];
+
       await Analysis.findByIdAndUpdate(analysisId, {
         status: 'completed',
         detections,
         summary: {
           totalDetections: detections.length,
-          threatsFound: detections.filter((d) => d.threatLevel !== 'NONE').length,
+          threatsFound,
           highestThreat,
           uniqueLabels,
           framesAnalyzed: response.data.frames_analyzed || 0,
           totalFrames: response.data.total_frames || 0,
+          threatEvents,
         },
         processedVideoPath: response.data.processed_video || null,
         processingTimeMs: response.data.processing_time_ms || null,
+        error: null,
       });
 
       await Video.findByIdAndUpdate(video._id, { status: 'completed' });
     } else {
-      await Analysis.findByIdAndUpdate(analysisId, {
-        status: 'completed',
-        summary: {
-          totalDetections: 0,
-          threatsFound: 0,
-          highestThreat: 'NONE',
-          uniqueLabels: [],
-          framesAnalyzed: 0,
-          totalFrames: 0,
-        },
-      });
-      await Video.findByIdAndUpdate(video._id, { status: 'completed' });
+      throw new Error('Unexpected AI service response.');
     }
   } catch (err) {
+    const message =
+      err.response && err.response.data && err.response.data.detail
+        ? err.response.data.detail
+        : err.message;
     await Analysis.findByIdAndUpdate(analysisId, {
       status: 'failed',
-      error: err.message,
+      error: message,
+      summary: {
+        totalDetections: 0,
+        threatsFound: 0,
+        highestThreat: 'NONE',
+        uniqueLabels: [],
+        framesAnalyzed: 0,
+        totalFrames: 0,
+      },
     });
     await Video.findByIdAndUpdate(video._id, { status: 'failed' });
   }
