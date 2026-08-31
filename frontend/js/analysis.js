@@ -1,5 +1,6 @@
 /**
- * Analysis page logic - list and detail views.
+ * Analysis page logic - minimal threat-only list and detail views.
+ * Raw AI detection data (labels, confidence, frames) is never shown.
  */
 (function () {
   var token = localStorage.getItem('wildshield.token');
@@ -85,9 +86,9 @@
     container.innerHTML = '';
     analyses.forEach(function (a) {
       var videoName = a.videoId ? (a.videoId.originalName || 'Unknown') : 'Unknown';
-      var highest = a.summary ? a.summary.highestThreat : 'NONE';
-      var threats = a.summary ? a.summary.threatsFound : 0;
-      var statusClass = a.status === 'completed' ? 'ok' : a.status === 'failed' ? 'error' : 'pending';
+      var result = a.threatResult || {};
+      var harm = result.verdict === 'ANIMAL_HARM_DETECTED';
+      var statusClass = a.status === 'completed' ? (harm ? 'ok' : 'ok') : a.status === 'failed' ? 'error' : 'pending';
 
       var div = document.createElement('div');
       div.className = 'analysis-card';
@@ -97,11 +98,7 @@
           '<span class="status-chip ' + statusClass + '"><span class="status-dot"></span>' + a.status + '</span>' +
         '</div>' +
         '<div class="analysis-card-body">' +
-          '<div class="analysis-meta">' +
-            '<span>Detections: <strong>' + (a.summary ? a.summary.totalDetections : 0) + '</strong></span>' +
-            '<span>Threats: <strong>' + threats + '</strong></span>' +
-            '<span>Highest: <span class="badge badge-' + highest.toLowerCase() + '">' + highest + '</span></span>' +
-          '</div>' +
+          statusLine(a, result) +
           '<span class="analysis-date">' + new Date(a.createdAt).toLocaleString() + '</span>' +
         '</div>';
 
@@ -112,7 +109,6 @@
       container.appendChild(div);
     });
 
-    // Pagination
     if (pagination && pagination.pages > 1) {
       paginationEl.style.display = 'flex';
       document.getElementById('pageInfo').textContent =
@@ -122,6 +118,28 @@
     } else {
       paginationEl.style.display = 'none';
     }
+  }
+
+  function statusLine(analysis, result) {
+    if (analysis.status !== 'completed') {
+      if (analysis.status === 'failed') {
+        return '<div class="verdict verdict-clear"><span class="verdict-status">Analysis Failed</span></div>';
+      }
+      return '<div class="verdict verdict-clear"><span class="verdict-status">' + (analysis.status || '').toUpperCase() + '...</span></div>';
+    }
+    return verdictLine(result);
+  }
+
+  function verdictLine(result) {
+    var harm = result.verdict === 'ANIMAL_HARM_DETECTED';
+    if (harm) {
+      var inc = result.incident || {};
+      return '<div class="verdict verdict-harm">' +
+        '<span class="verdict-status">&#9888;&#65039; Animal Harm Detected</span>' +
+        (inc.incident_type ? '<span class="muted">' + inc.incident_type + '</span>' : '') +
+        '</div>';
+    }
+    return '<div class="verdict verdict-clear"><span class="verdict-status">No Threat Detected</span></div>';
   }
 
   document.getElementById('prevPage').addEventListener('click', function () {
@@ -140,23 +158,53 @@
 
     var card = document.getElementById('detailCard');
     card.innerHTML = '<p class="muted">Loading analysis...</p>';
+    stopPolling();
 
+    fetchDetail(id, 0);
+  }
+
+  var pollTimer = null;
+  var pollStartedAt = 0;
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function fetchDetail(id, elapsedShown) {
     fetch(API + '/analysis/' + id, { headers: headers })
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (!data.success) throw new Error('Not found');
-        renderDetail(data.analysis);
+        var status = data.analysis.status;
+        if (status === 'queued' || status === 'processing') {
+          renderDetail(data.analysis);
+          if (!pollTimer) {
+            pollStartedAt = Date.now();
+            pollTimer = setInterval(function () {
+              var secs = Math.round((Date.now() - pollStartedAt) / 1000);
+              fetchDetail(id, secs);
+            }, 3000);
+          }
+        } else {
+          stopPolling();
+          renderDetail(data.analysis);
+        }
       })
       .catch(function () {
-        card.innerHTML = '<p class="muted">Analysis not found.</p>';
+        stopPolling();
+        var card = document.getElementById('detailCard');
+        if (card) card.innerHTML = '<p class="muted">Analysis not found.</p>';
       });
   }
 
   function renderDetail(analysis) {
     var card = document.getElementById('detailCard');
     var videoName = analysis.videoId ? (analysis.videoId.originalName || 'Unknown') : 'Unknown';
-    var summary = analysis.summary || {};
-    var detections = analysis.detections || [];
+    var result = analysis.threatResult || {};
+    var harm = result.verdict === 'ANIMAL_HARM_DETECTED';
 
     var statusClass = 'error';
     var statusText = analysis.status;
@@ -169,78 +217,84 @@
       '<h2>' + videoName + '</h2>' +
       '<div class="detail-meta">' +
         '<span class="status-chip ' + statusClass + '"><span class="status-dot"></span>' + statusText + '</span>' +
-        '<span>Requested by: ' + (analysis.requestedBy ? analysis.requestedBy.name : 'Unknown') + '</span>' +
         '<span>Date: ' + new Date(analysis.createdAt).toLocaleString() + '</span>' +
-        (analysis.processingTimeMs ? '<span>Processing time: ' + Math.round(analysis.processingTimeMs) + 'ms</span>' : '') +
       '</div>';
 
-    // Show error prominently when failed
     if (analysis.status === 'failed') {
-      html += '<div class="form-msg error" style="display:block;">' +
+      html += '<div class="form-msg error" style="display:block;margin-top:1rem;">' +
         '<strong>Analysis failed:</strong> ' + (analysis.error || 'Unknown error occurred while processing the video.') +
         '</div>';
       card.innerHTML = html;
       return;
     }
 
-    // Show processing note
     if (analysis.status === 'queued' || analysis.status === 'processing') {
+      var secs = pollStartedAt ? Math.round((Date.now() - pollStartedAt) / 1000) : 0;
       html += '<div class="notice" style="margin-top:1rem;">' +
-        '<strong>Analysis in progress.</strong> The video is being processed by the AI service. ' +
-        'Please check back shortly, or navigate to the list and reload.</div>';
+        '<strong>Analysis ' + (analysis.status === 'queued' ? 'queued' : 'in progress') + '.</strong> ' +
+        'The video is being processed. This page refreshes automatically. ' +
+        '<span class="muted">(' + secs + 's elapsed)</span></div>';
       card.innerHTML = html;
       return;
     }
 
-    html += '<div class="detail-section">' +
-        '<h3>Summary</h3>' +
-        '<div class="summary-grid">' +
-          '<div class="summary-item"><span class="summary-label">Total Detections</span><span class="summary-value">' + (summary.totalDetections || 0) + '</span></div>' +
-          '<div class="summary-item"><span class="summary-label">Threats Found</span><span class="summary-value">' + (summary.threatsFound || 0) + '</span></div>' +
-          '<div class="summary-item"><span class="summary-label">Highest Threat</span><span class="summary-value"><span class="badge badge-' + (summary.highestThreat || 'none').toLowerCase() + '">' + (summary.highestThreat || 'NONE') + '</span></span></div>' +
-          '<div class="summary-item"><span class="summary-label">Frames Analyzed</span><span class="summary-value">' + (summary.framesAnalyzed || 0) + ' / ' + (summary.totalFrames || 0) + '</span></div>' +
-        '</div>' +
-      '</div>';
-
-    if (summary.uniqueLabels && summary.uniqueLabels.length > 0) {
-      html += '<div class="detail-section"><h3>Labels Detected</h3><div class="stack-row">';
-      summary.uniqueLabels.forEach(function (label) {
-        html += '<span class="tag">' + label + '</span>';
-      });
-      html += '</div></div>';
-    }
-
-    if (detections.length > 0) {
-      html += '<div class="detail-section"><h3>Detections (' + detections.length + ')</h3>';
-      html += '<div class="detections-table"><table><thead><tr>' +
-        '<th>Label</th><th>Confidence</th><th>Category</th><th>Frame</th>' +
-        '</tr></thead><tbody>';
-
-      var sorted = detections.slice().sort(function (a, b) {
-        return b.confidence - a.confidence;
-      });
-
-      sorted.forEach(function (d) {
-        var threat = d.threatLevel || 'NONE';
-        html += '<tr>' +
-          '<td>' + d.label + '</td>' +
-          '<td>' + (d.confidence * 100).toFixed(1) + '%</td>' +
-          '<td><span class="badge badge-' + threat.toLowerCase() + '">' + (d.threatCategory || 'observed') + '</span></td>' +
-          '<td>' + d.frameIndex + '</td>' +
-          '</tr>';
-      });
-
-      html += '</tbody></table></div></div>';
+    // Completed - show ONLY the actionable verdict.
+    if (!harm) {
+      html += '<div class="detail-result detail-result-clear">' +
+        '<h3 class="result-title">Status: No Threat Detected</h3>' +
+        '<p class="result-message">' + (result.message || 'No animal attack, harm, or abuse was detected in this video.') + '</p>' +
+        '</div>';
     } else {
-      html += '<div class="notice" style="margin-top:1rem;">' +
-        '<strong>No detections found.</strong> The AI model did not detect any objects in this video above the confidence threshold. ' +
-        'This can happen if the video has low clarity, the objects are not in the model\'s training classes, or quality is poor.</div>';
+      var inc = result.incident || {};
+      html += '<div class="detail-result detail-result-harm">' +
+        '<h3 class="result-title">Status: &#9888;&#65039; Animal Harm Detected</h3>' +
+        (inc.incident_type ? '<p class="incident-line"><strong>Type of incident:</strong> ' + inc.incident_type + '</p>' : '') +
+        '</div>';
     }
 
-    if (analysis.status === 'completed' && analysis.reportPath) {
-      html += '<div class="detail-actions"><a href="' + API + '/reports/download/' + analysis._id + '" class="btn btn-primary" target="_blank">Download PDF Report</a></div>';
-    } else if (analysis.status === 'completed') {
+    // Temporal / VideoMAE analysis panel (additive - never required).
+    var vm = analysis.videomae;
+    if (vm) {
+      html += '<div class="detail-result detail-result-clear" style="margin-top:1rem;">';
+      html += '<h3 class="result-title">Temporal Analysis (VideoMAE)</h3>';
+      if (vm.loaded) {
+        if (vm.action_class) {
+          html += '<p class="incident-line"><strong>Action detected:</strong> ' +
+            vm.action_class.replace(/_/g, ' ') + '</p>';
+          if (vm.action_confidence) {
+            html += '<p class="incident-line"><strong>Action confidence:</strong> ' +
+              Math.round(vm.action_confidence * 100) + '%</p>';
+          }
+        }
+        if (vm.threat_level) {
+          html += '<p class="incident-line"><strong>Threat level:</strong> ' +
+            vm.threat_level + '</p>';
+        }
+        if (vm.animals_detected && vm.animals_detected.length) {
+          html += '<p class="incident-line"><strong>Detected animals:</strong> ' +
+            vm.animals_detected.map(cleanLabel).join(', ') + '</p>';
+        }
+        html += '<p class="incident-line"><strong>Person detected:</strong> ' +
+          (vm.person_detected ? 'Yes' : 'No') + '</p>';
+        html += '<p class="incident-line"><strong>Weapon detected:</strong> ' +
+          (vm.weapon_detected ? 'Yes' : 'No') + '</p>';
+        if (vm.reason) {
+          html += '<p class="incident-line"><strong>Analysis:</strong> ' + vm.reason + '</p>';
+        }
+      } else {
+        html += '<p class="result-message">Action classifier not available ' +
+          (vm.limitation ? '(' + vm.limitation + ')' : '') + '</p>';
+      }
+      if (vm.limitation && vm.loaded) {
+        html += '<p class="muted" style="font-size:0.85rem;margin-top:0.5rem;">' +
+          vm.limitation + '</p>';
+      }
+      html += '</div>';
+    }
+
+    if (analysis.status === 'completed') {
       html += '<div class="detail-actions"><button class="btn btn-primary" id="generateReport">Generate PDF Report</button></div>';
+      html += '<div class="detail-actions"><button class="btn btn-ghost" id="downloadReport">Download PDF Report</button></div>';
     }
 
     card.innerHTML = html;
@@ -257,7 +311,8 @@
           .then(function (res) { return res.json(); })
           .then(function (data) {
             if (data.success) {
-              window.location.href = 'analysis.html?id=' + analysis._id;
+              alert('Report generated successfully.');
+              showDetail(analysis._id);
             } else {
               alert(data.message || 'Failed to generate report');
               reportBtn.disabled = false;
@@ -271,9 +326,49 @@
           });
       });
     }
+
+    var dlBtn = document.getElementById('downloadReport');
+    if (dlBtn) {
+      dlBtn.addEventListener('click', function () {
+        dlBtn.disabled = true;
+        dlBtn.textContent = 'Downloading...';
+        downloadReport(analysis._id).then(function (ok) {
+          dlBtn.disabled = false;
+          dlBtn.textContent = 'Download PDF Report';
+          if (!ok) alert('No report available. Please generate the report first.');
+        });
+      });
+    }
+  }
+
+  function downloadReport(analysisId) {
+    return fetch(API + '/reports/download/' + analysisId, { headers: headers })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Failed');
+        return res.blob();
+      })
+      .then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'report_' + analysisId + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function cleanLabel(l) {
+    return String(l).replace(/[-_]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
   document.getElementById('backToList').addEventListener('click', function () {
+    stopPolling();
     window.history.pushState({}, '', 'analysis.html');
     document.getElementById('detailView').style.display = 'none';
     document.getElementById('analysesList').style.display = 'block';

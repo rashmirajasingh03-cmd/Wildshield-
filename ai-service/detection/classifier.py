@@ -53,6 +53,9 @@ WILDLIFE_CLASSES = {
     "badger", "otter", "mole_rat", "armadillo", "pangolin",
     # Semiaquatic
     "seal", "dolphin", "manatee", "walrus",
+    # Primates / monkeys
+    "monkey", "baboon", "primate", "macaque", "vervet", "gorilla",
+    "chimpanzee", "chimp", "orangutan", "mandrill", "lemur",
 }
 
 # ---------------------------------------------------------------------------
@@ -60,6 +63,22 @@ WILDLIFE_CLASSES = {
 # logic (analyzer) confirms an attack in progress.
 # ---------------------------------------------------------------------------
 HUMAN_CLASSES = {"person", "human", "man", "woman", "child", "ranger"}
+
+# ---------------------------------------------------------------------------
+# PREDATOR / dangerous species. Presence alone is still NOT a threat, but a
+# predator co-occurring close to a person is treated as a possible
+# "animal attacking person" incident by the analyzer.
+# ---------------------------------------------------------------------------
+PREDATOR_CLASSES = {
+    "bear", "lion", "tiger", "leopard", "cheetah", "jaguar", "panther",
+    "cougar", "puma", "lynx", "bobcat", "hyena", "wolf", "jackal",
+    "wild_dog", "dingo", "crocodile", "alligator", "caiman", "snake",
+    "python", "cobra", "hippopotamus", "rhinoceros", "rhino", "warthog",
+    "boar", "wild_boar",
+    # Aggressive primates that commonly fight/kill one another or other animals
+    "baboon", "monkey", "macaque", "vervet", "mandrill", "gorilla",
+    "chimpanzee", "ape", "orangutan", "lemur",
+}
 
 # ---------------------------------------------------------------------------
 # HUMAN ATTACK / co-existence categories (declared in classifier but the real

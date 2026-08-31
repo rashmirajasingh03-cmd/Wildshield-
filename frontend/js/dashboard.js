@@ -72,14 +72,7 @@
         var stats = data.stats;
         document.getElementById('statVideos').textContent = stats.totalVideos;
         document.getElementById('statAnalyses').textContent = stats.totalAnalyses;
-
-        var totalThreats = 0;
-        if (stats.threats) {
-          for (var k in stats.threats) {
-            if (k !== 'NONE' && k !== 'LOW') totalThreats += stats.threats[k];
-          }
-        }
-        document.getElementById('statThreats').textContent = totalThreats;
+        document.getElementById('statThreats').textContent = stats.harmDetectedCount || 0;
 
         var container = document.getElementById('recentAnalyses');
         if (stats.recentAnalyses && stats.recentAnalyses.length > 0) {
@@ -88,10 +81,10 @@
             var div = document.createElement('div');
             div.className = 'recent-item';
             var videoName = a.videoId ? (a.videoId.originalName || 'Unknown') : 'Unknown';
-            var threat = a.summary ? a.summary.highestThreat : 'NONE';
+            var harm = a.threatResult && a.threatResult.verdict === 'ANIMAL_HARM_DETECTED';
             div.innerHTML =
               '<span class="recent-name">' + videoName + '</span>' +
-              '<span class="badge badge-' + threat.toLowerCase() + '">' + threat + '</span>' +
+              '<span class="badge ' + (harm ? 'badge-critical' : 'badge-none') + '">' + (harm ? '&#9888;&#65039; Harm Detected' : 'No Threat') + '</span>' +
               '<span class="recent-date">' + new Date(a.createdAt).toLocaleDateString() + '</span>';
             container.appendChild(div);
           });

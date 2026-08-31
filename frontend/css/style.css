@@ -251,3 +251,81 @@ footer .container {
   .nav-links a:not(.btn) { display: none; }
   .hero { padding: 3.2rem 0 2.4rem; }
 }
+
+/* ---------- Global helpers ---------- */
+.sub { color: var(--muted); font-size: 0.95rem; }
+.muted { color: var(--muted); }
+.user-info { color: var(--muted); font-size: 0.88rem; }
+.btn-sm { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+
+/* ---------- Analysis (results) page ---------- */
+.analyses-list { display: grid; gap: 0.9rem; }
+
+.analysis-card {
+  background: linear-gradient(180deg, var(--panel), var(--bg-elev));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.05rem 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.analysis-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+
+.analysis-card-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.analysis-name { font-weight: 700; font-size: 1rem; }
+
+.analysis-card-body { margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.analysis-date { color: var(--faint); font-size: 0.82rem; }
+
+/* Verdict (status) line used on cards and details */
+.verdict { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.verdict-status { font-weight: 700; font-size: 0.92rem; }
+.verdict-clear .verdict-status { color: var(--low); }
+.verdict-harm .verdict-status { color: var(--critical); }
+
+.badge-none {
+  color: var(--muted); border-color: var(--border-strong); background: rgba(143, 168, 155, 0.08);
+}
+
+/* Detail view */
+.detail-card {
+  background: linear-gradient(180deg, var(--panel), var(--bg-elev));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.6rem 1.8rem;
+}
+.detail-card h2 { font-size: 1.35rem; margin-bottom: 0.7rem; }
+.detail-meta {
+  display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
+  color: var(--muted); font-size: 0.88rem; margin-bottom: 1.2rem;
+}
+
+.detail-result {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  padding: 1.4rem 1.5rem;
+  margin-top: 0.4rem;
+}
+.detail-result-clear { border-left: 4px solid var(--low); background: rgba(74, 222, 128, 0.04); }
+.detail-result-harm { border-left: 4px solid var(--critical); background: rgba(248, 113, 113, 0.06); }
+
+.result-title { font-size: 1.25rem; margin-bottom: 0.45rem; }
+.detail-result-harm .result-title { color: var(--critical); }
+.detail-result-clear .result-title { color: var(--low); }
+.result-message { color: var(--muted); margin-bottom: 0.8rem; }
+.incident-line { margin-top: 0.35rem; color: var(--text); font-size: 0.95rem; }
+.incident-line strong { color: var(--muted); font-weight: 600; }
+
+.pagination {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  margin-top: 1.6rem;
+}
+.pagination span { color: var(--muted); font-size: 0.88rem; }
+
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.empty-state h3 { color: var(--text); margin-bottom: 0.4rem; }
+
+.detail-actions { margin-top: 1.4rem; }

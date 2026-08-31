@@ -65,8 +65,12 @@
           else parts.push('primate/monkey/baboon: NOT supported by current model');
           if (h.weapons && h.weapons.length) parts.push('weapons: ' + h.weapons.join(', '));
           else parts.push('weapons: NONE supported');
-          if (h.projectiles_arrows_bows) parts.push('arrows/bows: supported');
-          else parts.push('arrows/bows: NOT supported');
+          if (h.projectiles_arrows_bows && h.projectiles_arrows_bows.length) parts.push('arrows/bows: ' + h.projectiles_arrows_bows.join(', '));
+          else parts.push('arrows/bows: NOT supported by current model');
+          if (h.traps_snares && h.traps_snares.length) parts.push('traps: ' + h.traps_snares.join(', '));
+          else parts.push('traps/snares: NOT supported by current model');
+          if (h.environmental_fire && h.environmental_fire.length) parts.push('fire/smoke: ' + h.environmental_fire.join(', '));
+          else parts.push('fire/smoke: NOT supported by current model');
         } else {
           parts.push('Model NOT loaded');
         }
@@ -127,6 +131,8 @@
       return;
     }
 
+    uploadedVideoId = null;
+    localStorage.removeItem('wildshield.lastVideoId');
     selectedFile = file;
     document.getElementById('fileName').textContent = file.name;
     document.getElementById('fileSize').textContent = formatSize(file.size);
@@ -138,6 +144,8 @@
 
   document.getElementById('removeFile').addEventListener('click', function () {
     selectedFile = null;
+    uploadedVideoId = null;
+    localStorage.removeItem('wildshield.lastVideoId');
     fileInput.value = '';
     fileInfo.style.display = 'none';
     dropZone.style.display = 'block';
@@ -168,7 +176,14 @@
         if (!result.ok) {
           throw new Error(result.data.message || 'Upload failed');
         }
-        uploadedVideoId = result.data.video._id;
+        var video =
+          result.data.video ||
+          (result.data.videoId ? { _id: result.data.videoId } : null);
+        if (!video || !video._id) {
+          throw new Error('Upload succeeded but no videoId was returned.');
+        }
+        uploadedVideoId = video._id;
+        localStorage.setItem('wildshield.lastVideoId', uploadedVideoId);
         showUploadSuccess();
       })
       .catch(function (err) {
@@ -187,9 +202,16 @@
   }
 
   document.getElementById('analyzeBtn').addEventListener('click', function () {
-    if (!uploadedVideoId) return;
-
     var analyzeBtn = document.getElementById('analyzeBtn');
+    var id = uploadedVideoId || localStorage.getItem('wildshield.lastVideoId');
+
+    if (!id) {
+      alert(
+        'No video is selected for analysis. Please upload the video first.'
+      );
+      return;
+    }
+
     analyzeBtn.disabled = true;
     analyzeBtn.textContent = 'Starting analysis...';
 
@@ -199,15 +221,20 @@
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ videoId: uploadedVideoId }),
+      body: JSON.stringify({ videoId: id }),
     })
       .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
       .then(function (result) {
         if (!result.ok) throw new Error(result.data.message || 'Failed');
+        localStorage.removeItem('wildshield.lastVideoId');
         window.location.href = 'analysis.html?id=' + result.data.analysis._id;
       })
       .catch(function (err) {
-        alert('Analysis start failed: ' + err.message);
+        var msg = err.message || 'Failed';
+        if (msg && msg.indexOf('videoId is required') !== -1) {
+          msg = 'The uploaded video could not be found. Please upload the video again and retry.';
+        }
+        alert('Analysis start failed: ' + msg);
         analyzeBtn.disabled = false;
         analyzeBtn.textContent = 'Start Analysis';
       });

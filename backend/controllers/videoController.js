@@ -82,7 +82,11 @@ exports.uploadVideo = async (req, res, next) => {
       notes: notes || '',
     });
 
-    res.status(201).json({ success: true, video });
+    res.status(201).json({
+      success: true,
+      video,
+      videoId: video._id,
+    });
   } catch (err) {
     next(err);
   }

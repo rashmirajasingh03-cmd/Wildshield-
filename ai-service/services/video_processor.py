@@ -124,7 +124,7 @@ class VideoProcessor:
 
             cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
 
-            label = f"{det.get('label', '?')} {det.get('confidence', 0):.0%}"
+            label = f"{det.get('label', '?')}"
             (tw, th), _ = cv2.getTextSize(
                 label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
             )

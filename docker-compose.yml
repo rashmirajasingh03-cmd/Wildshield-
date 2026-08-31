@@ -48,6 +48,11 @@ services:
       AI_PORT: 8000
       MODEL_PATH: models/yolo11n.pt
       FRAME_INTERVAL: 10
+      DEVICE: auto
+      VIDEOMAE_MODEL_NAME: MCG-NJU/videomae-base
+      VIDEOMAE_CHECKPOINT: ${VIDEOMAE_CHECKPOINT:-}
+      VIDEOMAE_NUM_FRAMES: 16
+      VIDEOMAE_CONFIDENCE_THRESHOLD: 0.5
       DEMO_MODE: "false"
     ports:
       - "8000:8000"

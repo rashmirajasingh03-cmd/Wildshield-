@@ -5,11 +5,14 @@ const env = require('../config/env');
 
 exports.startAnalysis = async (req, res, next) => {
   try {
-    const { videoId } = req.body;
+    const videoId =
+      (req.body && (req.body.videoId || req.body._id)) || req.params.videoId;
     if (!videoId) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'videoId is required.' });
+      return res.status(400).json({
+        success: false,
+        message:
+          'videoId is required. Upload a video first, then start the analysis from the upload page.',
+      });
     }
 
     const video = await Video.findById(videoId);
@@ -80,36 +83,45 @@ async function dispatchToAI(analysisId, video, config) {
     );
 
     if (response.status === 200 && response.data) {
-      const detections = response.data.detections || [];
-      const uniqueLabels = [...new Set(detections.map((d) => d.label))];
-      const threatLevels = detections.map((d) => d.threatLevel || 'NONE');
-      const threatPriority = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE'];
-      let highestThreat = 'NONE';
-      for (const level of threatLevels) {
-        if (threatPriority.indexOf(level) < threatPriority.indexOf(highestThreat)) {
-          highestThreat = level;
-        }
-      }
+      const result = response.data.result || {};
+      const verdict = result.verdict === 'ANIMAL_HARM_DETECTED' ? 'ANIMAL_HARM_DETECTED' : 'NO_THREAT';
 
-      const threatsFound = detections.filter(
-        (d) => d.threatLevel === 'CRITICAL' || d.threatLevel === 'HIGH' || d.threatLevel === 'MEDIUM'
-      ).length;
-
-      const threatEvents = response.data.summary && response.data.summary.threat_events
-        ? response.data.summary.threat_events
-        : [];
+      // VideoMAE temporal-action fusion fields (may be absent when the
+      // classifier is unavailable or running in pretrained/model-development mode).
+      const videomae = {
+        loaded: !!(result.videomae && result.videomae.loaded),
+        mode: (result.videomae && result.videomae.mode) || 'not_loaded',
+        classification: result.classification || null,
+        threat_level: result.threat_level || null,
+        confidence: result.confidence || 0,
+        action_class: result.action_class || null,
+        action_confidence: result.action_confidence || 0,
+        action_supported: !!result.action_supported,
+        weapon_detected: !!result.weapon_detected,
+        person_detected: !!result.person_detected,
+        animals_detected: result.animals_detected || [],
+        detected_objects: result.detected_objects || [],
+        reason: result.reason || null,
+        limitation:
+          (result.videomae && result.videomae.limitation) || null,
+      };
 
       await Analysis.findByIdAndUpdate(analysisId, {
         status: 'completed',
-        detections,
+        threatResult: {
+          verdict,
+          message: result.message || null,
+          incident: result.incident || null,
+          incidents_count: result.incidents_count || 0,
+        },
+        videomae,
         summary: {
-          totalDetections: detections.length,
-          threatsFound,
-          highestThreat,
-          uniqueLabels,
+          totalDetections: 0,
+          threatsFound: verdict === 'ANIMAL_HARM_DETECTED' ? 1 : 0,
+          highestThreat: verdict === 'ANIMAL_HARM_DETECTED' ? 'HIGH' : 'NONE',
+          uniqueLabels: [],
           framesAnalyzed: response.data.frames_analyzed || 0,
           totalFrames: response.data.total_frames || 0,
-          threatEvents,
         },
         processedVideoPath: response.data.processed_video || null,
         processingTimeMs: response.data.processing_time_ms || null,
@@ -128,6 +140,12 @@ async function dispatchToAI(analysisId, video, config) {
     await Analysis.findByIdAndUpdate(analysisId, {
       status: 'failed',
       error: message,
+      threatResult: {
+        verdict: 'NO_THREAT',
+        message: 'Analysis failed.',
+        incident: null,
+        incidents_count: 0,
+      },
       summary: {
         totalDetections: 0,
         threatsFound: 0,
@@ -139,6 +157,17 @@ async function dispatchToAI(analysisId, video, config) {
     });
     await Video.findByIdAndUpdate(video._id, { status: 'failed' });
   }
+}
+
+function stripDetections(doc) {
+  const obj = doc && typeof doc.toObject === 'function' ? doc.toObject() : doc;
+  if (obj) {
+    delete obj.detections;
+    if (obj.summary) {
+      delete obj.summary.uniqueLabels;
+    }
+  }
+  return obj;
 }
 
 exports.getAnalyses = async (req, res, next) => {
@@ -166,7 +195,7 @@ exports.getAnalyses = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      analyses,
+      analyses: (analyses || []).map((a) => stripDetections(a)),
       pagination: {
         page,
         limit,
@@ -191,7 +220,7 @@ exports.getAnalysis = async (req, res, next) => {
         .json({ success: false, message: 'Analysis not found.' });
     }
 
-    res.status(200).json({ success: true, analysis });
+    res.status(200).json({ success: true, analysis: stripDetections(analysis) });
   } catch (err) {
     next(err);
   }
@@ -199,18 +228,11 @@ exports.getAnalysis = async (req, res, next) => {
 
 exports.getDashboardStats = async (req, res, next) => {
   try {
-    const [videoCount, analysisCount, threatCounts] = await Promise.all([
+    const [videoCount, analysisCount, harmCount, noThreatCount] = await Promise.all([
       Video.countDocuments(),
       Analysis.countDocuments(),
-      Analysis.aggregate([
-        { $unwind: '$detections' },
-        {
-          $group: {
-            _id: '$detections.threatLevel',
-            count: { $sum: 1 },
-          },
-        },
-      ]),
+      Analysis.countDocuments({ 'threatResult.verdict': 'ANIMAL_HARM_DETECTED' }),
+      Analysis.countDocuments({ 'threatResult.verdict': 'NO_THREAT', status: 'completed' }),
     ]);
 
     const recentAnalyses = await Analysis.find()
@@ -219,18 +241,14 @@ exports.getDashboardStats = async (req, res, next) => {
       .populate('videoId', 'originalName')
       .lean();
 
-    const threats = {};
-    for (const t of threatCounts) {
-      threats[t._id] = t.count;
-    }
-
     res.status(200).json({
       success: true,
       stats: {
         totalVideos: videoCount,
         totalAnalyses: analysisCount,
-        threats,
-        recentAnalyses,
+        harmDetectedCount: harmCount,
+        noThreatCount,
+        recentAnalyses: (recentAnalyses || []).map((a) => stripDetections(a)),
       },
     });
   } catch (err) {

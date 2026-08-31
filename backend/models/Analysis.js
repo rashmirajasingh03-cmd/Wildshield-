@@ -43,6 +43,26 @@ const analysisSchema = new mongoose.Schema(
       default: 'queued',
     },
     detections: [detectionSchema],
+    threatResult: {
+      verdict: {
+        type: String,
+        enum: ['NO_THREAT', 'ANIMAL_HARM_DETECTED'],
+        default: 'NO_THREAT',
+      },
+      message: { type: String, default: null },
+      incident: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null,
+      },
+      incidents_count: { type: Number, default: 0 },
+    },
+    // VideoMAE fusion metadata from the AI service (Action / Threat level /
+    // temporal analysis). Stored separately so the legacy verdict rendering
+    // above stays untouched.
+    videomae: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
     summary: {
       totalDetections: { type: Number, default: 0 },
       threatsFound: { type: Number, default: 0 },

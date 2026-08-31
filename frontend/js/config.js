@@ -13,9 +13,16 @@
       : 'http://localhost:5000/api';
 
   const stored = localStorage.getItem('wildshield.apiBase');
+  // Only trust a stored override if it points to a plausible http(s) API URL.
+  // A stale/typed-in value would silently route to an old backend and break
+  // upload -> videoId -> analysis flow; in that case fall back to the default.
+  const storedValid =
+    stored &&
+    /^https?:\/\/.+/.test(stored) &&
+    /\/api\/?$/.test(stored);
 
   window.WildShield = {
-    API_BASE: stored || DEFAULT_API_BASE,
+    API_BASE: storedValid ? stored : DEFAULT_API_BASE,
     setApiBase: function (url) {
       localStorage.setItem('wildshield.apiBase', url);
       window.WildShield.API_BASE = url;
