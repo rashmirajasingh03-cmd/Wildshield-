@@ -33,7 +33,4 @@ services:
         value: "false"
     healthCheckPath: /health
 
-databases:
-  - name: wildshield-db
-    plan: starter
-    databaseName: wildshield
+
