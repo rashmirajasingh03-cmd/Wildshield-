@@ -1,34 +1,21 @@
 const express = require('express');
 const {
-  register,
   login,
+  viewerLogin,
   getMe,
   updateProfile,
-  listUsers,
-  updateUserRole,
-  deactivateUser,
 } = require('../controllers/authController');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/register', authenticate, authorize('ADMIN'), register);
+// Admin (username/email + password) and Officer (username/email + password)
 router.post('/login', login);
+
+// Viewer: username only, no password, no registration
+router.post('/viewer-login', viewerLogin);
+
 router.get('/me', authenticate, getMe);
 router.patch('/me', authenticate, updateProfile);
-
-router.get('/users', authenticate, authorize('ADMIN'), listUsers);
-router.patch(
-  '/users/:id/role',
-  authenticate,
-  authorize('ADMIN'),
-  updateUserRole
-);
-router.delete(
-  '/users/:id',
-  authenticate,
-  authorize('ADMIN'),
-  deactivateUser
-);
 
 module.exports = router;

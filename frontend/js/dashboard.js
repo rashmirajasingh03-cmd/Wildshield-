@@ -1,70 +1,27 @@
 /**
- * Dashboard page logic - requires valid JWT authentication.
- * Validates token with backend on every page load.
+ * Officer dashboard — AI operations. Officer-only; admins and viewers are
+ * redirected to their own portals.
  */
 (function () {
-  var token = localStorage.getItem('wildshield.token');
-  var userStr = localStorage.getItem('wildshield.user');
-
-  if (!token || !userStr) {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-    return;
-  }
-
-  var user;
-  try {
-    user = JSON.parse(userStr);
-  } catch (e) {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-    return;
-  }
-
   var API = window.WildShield.API_BASE;
-  var headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  var auth = window.WildShield.auth;
 
-  // Validate token with backend before rendering anything
-  fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token } })
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error('Token invalid');
-      }
-      return res.json();
-    })
-    .then(function (data) {
-      if (!data.success || !data.user) {
-        throw new Error('Invalid response');
-      }
-      // Update user data from server
-      user = data.user;
-      localStorage.setItem('wildshield.user', JSON.stringify(user));
-      renderDashboard();
-    })
-    .catch(function () {
-      localStorage.removeItem('wildshield.token');
-      localStorage.removeItem('wildshield.user');
-      window.location.href = 'login.html';
-    });
-
-  function renderDashboard() {
+  function renderDashboard(user) {
     document.getElementById('userName').textContent = user.name;
-    document.getElementById('userEmail').textContent = user.email;
-    document.getElementById('userRole').textContent = user.role;
-    document.getElementById('userSince').textContent = new Date(user.createdAt).toLocaleDateString();
-    document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
+    document.getElementById('userEmail').textContent = user.email || '—';
+    document.getElementById('userRole').textContent = auth.label(user.role);
+    document.getElementById('userSince').textContent =
+      new Date(user.createdAt).toLocaleDateString();
+    document.getElementById('userInfo').textContent =
+      user.name + ' (' + auth.label(user.role) + ')';
 
-    if (user.role === 'VIEWER') {
-      var uploadBtn = document.querySelector('.dash-actions .btn-primary');
-      if (uploadBtn) uploadBtn.style.display = 'none';
-    }
-
-    loadStats();
+    loadStats(user);
   }
 
-  function loadStats() {
+  function loadStats(user) {
+    var token = auth.getToken();
+    var headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+
     fetch(API + '/analysis/dashboard', { headers: headers })
       .then(function (res) { return res.json(); })
       .then(function (data) {
@@ -84,12 +41,15 @@
             var harm = a.threatResult && a.threatResult.verdict === 'ANIMAL_HARM_DETECTED';
             div.innerHTML =
               '<span class="recent-name">' + videoName + '</span>' +
-              '<span class="badge ' + (harm ? 'badge-critical' : 'badge-none') + '">' + (harm ? '&#9888;&#65039; Harm Detected' : 'No Threat') + '</span>' +
+              '<span class="badge ' + (harm ? 'badge-critical' : 'badge-none') + '">' +
+                (harm ? '&#9888;&#65039; Attack Detected' : 'No Attacks') +
+              '</span>' +
               '<span class="recent-date">' + new Date(a.createdAt).toLocaleDateString() + '</span>';
             container.appendChild(div);
           });
         } else {
-          container.innerHTML = '<p class="muted">No analyses yet. <a href="upload.html">Upload a video</a> to get started.</p>';
+          container.innerHTML =
+            '<p class="muted">No analyses yet. <a href="upload.html">Upload a video</a> to get started.</p>';
         }
       })
       .catch(function () {
@@ -108,9 +68,8 @@
       });
   }
 
-  document.getElementById('logoutBtn').addEventListener('click', function () {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-  });
+  document.getElementById('logoutBtn').addEventListener('click', auth.logout);
+
+  // Officer-only page.
+  auth.guard(['officer']).then(renderDashboard);
 })();

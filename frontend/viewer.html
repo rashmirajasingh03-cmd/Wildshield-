@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detection Archive — WILDSHIELD AI</title>
+  <title>Reports Portal — WILDSHIELD AI</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,7 +16,7 @@
     <!-- ===== Slim forest rail ===== -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <a class="brand-mark" href="dashboard.html" aria-label="WildShield AI">
+        <a class="brand-mark" href="viewer.html" aria-label="WildShield AI">
           <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
             <path d="M24 5.5L8.5 11.5v12.1c0 11 7.2 18.4 15.5 21.4 8.3-3 15.5-10.4 15.5-21.4V11.5L24 5.5z" fill="rgba(111,156,117,0.10)" stroke="#6f9c75" stroke-width="1.6"/>
             <path d="M24 11l-4.4 6.8h3.3l-2 8 3.1-5v7.6l2.4-3.6 2.4 3.6v-7.6l3.1 5-2-8h3.3L24 11z" fill="#8fb98f" stroke="#C9E0B8" stroke-width="0.8" stroke-linejoin="round"/>
@@ -25,15 +25,9 @@
       </div>
 
       <nav class="sidebar-links">
-        <span class="nav-label">Ops</span>
-        <a class="sidebar-link" href="dashboard.html">
-          <span class="s-icon">&#9681;</span><span>Command</span>
-        </a>
-        <a class="sidebar-link" href="upload.html">
-          <span class="s-icon">&#9166;</span><span>Ingest</span>
-        </a>
-        <a class="sidebar-link active" href="analysis.html">
-          <span class="s-icon">&#9000;</span><span>Analyses</span>
+        <span class="nav-label">Access</span>
+        <a class="sidebar-link active" href="viewer.html">
+          <span class="s-icon">&#128196;</span><span>Reports</span>
         </a>
         <span class="nav-label">System</span>
         <a class="sidebar-link danger" href="#" id="logoutBtn">
@@ -42,9 +36,9 @@
       </nav>
 
       <div class="sidebar-user">
-        <span class="sidebar-avatar">O</span>
+        <span class="sidebar-avatar">V</span>
         <span class="u-name" id="userInfo">Loading...</span>
-        <span class="u-role">Forest Security Officer</span>
+        <span class="u-role">Read-Only Viewer</span>
       </div>
     </aside>
 
@@ -54,28 +48,25 @@
     <div class="main-area">
       <header class="main-top">
         <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">&#9776;</button>
-        <span class="mt-title">Detection Center</span>
-        <div class="mt-actions">
-          <a href="upload.html" class="btn btn-primary btn-sm">Analyze Video</a>
-        </div>
+        <span class="mt-title">Reports Portal</span>
+        <div class="mt-actions"></div>
       </header>
 
       <main class="main-inner">
         <div class="dash-header">
           <div>
-            <div class="page-eyebrow">Detection Archive</div>
-            <h1>Video Analyses</h1>
-            <p class="sub">The monitored-belt archive — every screened sequence and its verdict.</p>
+            <div class="page-eyebrow">Read-Only Access</div>
+            <h1>Reports Portal</h1>
+            <p class="sub">Verified incident reports from the monitored belt. All findings are decision-support only.</p>
           </div>
         </div>
 
-        <!-- Archive list (rendered by analysis.js) -->
         <div class="dash-panel">
           <div class="panel-head">
-            <h2>&#128065; Screened sequences</h2>
-            <span class="section-num">Archive / Chronological</span>
+            <h2>&#128196; Generated Reports</h2>
+            <span class="section-num">Archive / Read Only</span>
           </div>
-          <div id="analysesList" class="analyses-list">
+          <div id="reportsList" class="recent-list">
             <div class="loading-row">
               <div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div>
             </div>
@@ -83,24 +74,9 @@
 
           <div id="pagination" class="pagination" style="display:none;">
             <button class="btn btn-ghost btn-sm" id="prevPage">&#8592; Previous</button>
-            <span id="pageInfo"></span>
+            <span id="pageInfo" class="muted"></span>
             <button class="btn btn-ghost btn-sm" id="nextPage">Next &#8594;</button>
           </div>
-        </div>
-
-        <!-- Detail / workstation view -->
-        <div id="detailView" style="display:none;">
-          <button class="btn btn-ghost" id="backToList" style="margin-bottom:1rem;">&#8592; Back to archive</button>
-          <div class="detail-card" id="detailCard">
-            <p class="muted">Loading sequence…</p>
-          </div>
-        </div>
-
-        <div class="notice mt-4">
-          <strong>About results:</strong> This archive reports only actionable animal
-          harm/attack incidents. Detections without evidence of harm are not shown and do
-          not raise alerts. Findings must be verified by authorized personnel before action
-          is taken.
         </div>
       </main>
     </div>
@@ -116,6 +92,6 @@
   </script>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/analysis.js"></script>
+  <script src="js/viewer.js"></script>
 </body>
 </html>

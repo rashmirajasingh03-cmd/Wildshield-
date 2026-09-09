@@ -1,90 +1,22 @@
 /**
- * Upload page logic - requires JWT authentication.
+ * Upload page logic — OFFICER only (videos:upload).
  */
 (function () {
-  var token = localStorage.getItem('wildshield.token');
-  var userStr = localStorage.getItem('wildshield.user');
-
-  if (!token || !userStr) {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-    return;
-  }
-
-  var user;
-  try {
-    user = JSON.parse(userStr);
-  } catch (e) {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-    return;
-  }
-
+  var auth = window.WildShield.auth;
   var API = window.WildShield.API_BASE;
+  var token = null;
 
-  // Validate token with backend before rendering
-  fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token } })
-    .then(function (res) {
-      if (!res.ok) throw new Error('Invalid');
-      return res.json();
-    })
-    .then(function (data) {
-      if (!data.success || !data.user) throw new Error('Invalid');
-      user = data.user;
-      localStorage.setItem('wildshield.user', JSON.stringify(user));
-      if (user.role === 'VIEWER') {
-        window.location.href = 'dashboard.html';
-        return;
-      }
-      document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
-    })
-    .catch(function () {
-      localStorage.removeItem('wildshield.token');
-      localStorage.removeItem('wildshield.user');
-      window.location.href = 'login.html';
-    });
-
-  var headers = { Authorization: 'Bearer ' + token };
+  var headers = { };
   var selectedFile = null;
   var uploadedVideoId = null;
 
-  // Load model capability info
-  fetch(API + '/health')
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-      if (data.aiService && data.aiService.reachable) {
-        var h = data.aiService.handles || {};
-        var parts = [];
-        if (data.aiService.modelLoaded) {
-          parts.push('YOLO model loaded (' + (data.aiService.modelClasses || '?') + ' classes)');
-          if (h.human) parts.push('human detection: yes');
-          if (h.wildlife_animals && h.wildlife_animals.length) parts.push('wildlife: ' + h.wildlife_animals.join(', '));
-          if (h.primate_monkey_baboon) parts.push('primate/monkey/baboon: supported');
-          else parts.push('primate/monkey/baboon: NOT supported by current model');
-          if (h.weapons && h.weapons.length) parts.push('weapons: ' + h.weapons.join(', '));
-          else parts.push('weapons: NONE supported');
-          if (h.projectiles_arrows_bows && h.projectiles_arrows_bows.length) parts.push('arrows/bows: ' + h.projectiles_arrows_bows.join(', '));
-          else parts.push('arrows/bows: NOT supported by current model');
-          if (h.traps_snares && h.traps_snares.length) parts.push('traps: ' + h.traps_snares.join(', '));
-          else parts.push('traps/snares: NOT supported by current model');
-          if (h.environmental_fire && h.environmental_fire.length) parts.push('fire/smoke: ' + h.environmental_fire.join(', '));
-          else parts.push('fire/smoke: NOT supported by current model');
-        } else {
-          parts.push('Model NOT loaded');
-        }
-        document.getElementById('modelInfo').textContent = parts.join(' · ') +
-          '. Detecting threats like baboons, arrows, guns or traps requires a custom-trained model placed at ai-service/models/.';
-      } else if (data.aiService && !data.aiService.reachable) {
-        document.getElementById('modelInfo').textContent = 'AI service unreachable. Analysis will fail until it runs on port 8000.';
-      } else {
-        document.getElementById('modelInfo').textContent = 'Unknown model status.';
-      }
-    })
-    .catch(function () {
-      document.getElementById('modelInfo').textContent = 'Could not check model status.';
-    });
+  // Officer-only page. Admins/viewers are redirected before the form renders.
+  auth.guard(['officer']).then(function (user) {
+    token = auth.getToken();
+    headers = { Authorization: 'Bearer ' + token };
+    document.getElementById('userInfo').textContent =
+      user.name + ' (' + auth.label(user.role) + ')';
+  });
 
   // Drop zone
   var dropZone = document.getElementById('dropZone');
@@ -259,9 +191,5 @@
     return bytes.toFixed(1) + ' ' + units[i];
   }
 
-  document.getElementById('logoutBtn').addEventListener('click', function () {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-  });
+  document.getElementById('logoutBtn').addEventListener('click', auth.logout);
 })();

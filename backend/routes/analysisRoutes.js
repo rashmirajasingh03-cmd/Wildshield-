@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, requireRole, requirePermission } = require('../middleware/auth');
 const {
   startAnalysis,
   getAnalyses,
@@ -9,9 +9,11 @@ const {
 
 const router = express.Router();
 
-router.use(authenticate);
+// AI detection / monitoring is OFFICER-only. Viewers consume reports, not
+// live detection pipelines; admins manage officers.
+router.use(authenticate, requireRole('officer'));
 
-router.post('/run', authorize('ADMIN', 'FOREST_OFFICIAL'), startAnalysis);
+router.post('/run', requirePermission('analysis:run'), startAnalysis);
 router.get('/dashboard', getDashboardStats);
 router.get('/', getAnalyses);
 router.get('/:id', getAnalysis);

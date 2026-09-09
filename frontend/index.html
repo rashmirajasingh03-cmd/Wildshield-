@@ -3,144 +3,255 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WildShield AI - Wildlife &amp; Forest Security</title>
+  <title>WILDSHIELD AI — Forest Surveillance Platform</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <!-- ===== Navbar ===== -->
-  <header class="navbar">
-    <div class="container">
-      <a class="brand" href="index.html">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 2L4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"
-                stroke="#34d399" stroke-width="1.6" fill="rgba(52,211,153,0.08)"/>
-          <path d="M8.5 12l2.2 2.2L15.5 9.5" stroke="#34d399" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        WildShield<span class="ai">&nbsp;AI</span>
+  <!-- ===== Navigation ===== -->
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html" style="display:flex;align-items:center;gap:0.7rem;">
+        <span class="brand-mark">
+          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <path d="M24 5.5L8.5 11.5v12.1c0 11 7.2 18.4 15.5 21.4 8.3-3 15.5-10.4 15.5-21.4V11.5L24 5.5z" fill="rgba(111,156,117,0.10)" stroke="#6f9c75" stroke-width="1.6"/>
+            <path d="M24 11l-4.4 6.8h3.3l-2 8 3.1-5v7.6l2.4-3.6 2.4 3.6v-7.6l3.1 5-2-8h3.3L24 11z" fill="#8fb98f" stroke="#C9E0B8" stroke-width="0.8" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-lockup">
+          <span class="brand-name">WildShield<em> AI</em></span>
+          <span class="brand-sub">Forest Surveillance</span>
+        </span>
       </a>
       <nav class="nav-links">
-        <a href="#capabilities">Capabilities</a>
-        <a href="#workflow">Workflow</a>
-        <a href="#stack">Stack</a>
-        <a class="btn btn-primary" href="login.html">Open Console</a>
+        <a href="#why">Why it matters</a>
+        <a href="#how">How it works</a>
+        <a href="#status">System status</a>
+        <span class="nav-cta">
+          <a class="btn btn-ghost btn-sm" href="login.html">Officer Login</a>
+          <a class="btn btn-primary btn-sm" href="login.html">Open Console</a>
+        </span>
       </nav>
     </div>
   </header>
 
-  <!-- ===== Hero ===== -->
-  <section class="hero">
-    <div class="container">
-      <span class="status-chip pending" id="systemStatus">
-        <span class="status-dot"></span><span id="systemStatusText">Checking services...</span>
-      </span>
-      <h1 style="margin-top:1.2rem;">
-        AI-powered security for<br /><span class="grad">forests &amp; wildlife</span>
-      </h1>
+  <!-- ===== 01 / FOREST SURVEILLANCE ===== -->
+  <section class="hero-survey" id="survey">
+    <video class="hero-video" autoplay muted loop playsinline preload="metadata"
+           poster="assets/forest-bg.jpg"
+           src="assets/forest-surveillance.mp4"></video>
+    <div class="hero-veil"></div>
+    <div class="hero-scan"></div>
+
+    <div class="survey-frame" aria-hidden="true">
+      <span class="frame-cnr tl"></span><span class="frame-cnr tr"></span>
+      <span class="frame-cnr bl"></span><span class="frame-cnr br"></span>
+    </div>
+
+    <div class="hero-top">
+      <span class="zone-tag">Tamil Nadu &middot; Forest Surveillance Belt</span>
+      <span class="live-pill"><span class="live-dot"></span>LIVE SURVEILLANCE</span>
+      <span class="hero-stamp" id="stamp">CAM 04 &middot; ZONE B &middot; DEMO FEED</span>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">01 / Forest Surveillance</div>
+      <h1>WildShield<em>&nbsp;Intelligent forest surveillance</em></h1>
       <p class="lead">
-        WildShield AI analyzes <strong>uploaded surveillance footage</strong> from forest
-        reserves and flags potential threats - illegal entry, poaching indicators, weapons,
-        traps and human presence in restricted areas. Results are decision support for
-        authorized personnel, never automated accusations.
+        AI-powered video analysis for detecting threats in forest environments.
+        Surveillance footage is processed and reduced to one clear operational
+        answer — <strong style="color:var(--clear-bright);">attack</strong> or
+        <strong style="color:var(--t-300);">no attack</strong> — for authorized
+        forest protection teams.
       </p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="login.html">Login to Console</a>
-        <a class="btn btn-ghost" href="#workflow">See how it works</a>
+        <a class="btn btn-primary" href="login.html">Enter the Console</a>
+        <a class="btn btn-ghost" href="#how">How WildShield works</a>
       </div>
       <div class="hero-meta">
-        <span>&#9679; Upload-based analysis (no live feeds required)</span>
-        <span>&#9679; YOLO object detection pipeline</span>
-        <span>&#9679; Human-in-the-loop verification</span>
+        <span class="meta-tag"><b>INPUT</b>Uploaded surveillance footage</span>
+        <span class="meta-tag"><b>ENGINE</b>YOLO + VideoMAE inference</span>
+        <span class="meta-tag"><b>VERIFICATION</b>Human-in-the-loop review</span>
       </div>
     </div>
   </section>
 
-  <!-- ===== Capabilities ===== -->
-  <section class="block" id="capabilities">
+  <!-- ===== 02 / WHY IT MATTERS ===== -->
+  <section class="editorial" id="why">
     <div class="container">
-      <div class="section-head">
-        <div class="kicker">Detection focus</div>
-        <h2>What the system looks for</h2>
-        <p>
-          Threat categories are configurable and evolve as custom-trained models are added.
-          Every finding is reported with a confidence score and a threat level.
-        </p>
+      <div class="sec-head">
+        <span class="sec-index">02</span>
+        <h2>Why outposts need remote eyes</h2>
+        <p class="sec-note">Forest ranges are vast and thinly staffed. Footage arrives from trails, waterholes and corridor edges — and must be judged quickly, calmly and consistently.</p>
       </div>
-      <div class="grid cols-4">
-        <div class="card"><span class="icon">&#128682;</span><h3>Illegal entry</h3><p>Human presence inside monitored or restricted forest zones.</p></div>
-        <div class="card"><span class="icon">&#127994;</span><h3>Poaching indicators</h3><p>Suspicious activity patterns that may indicate poaching behavior.</p></div>
-        <div class="card"><span class="icon">&#9876;&#65039;</span><h3>Weapons</h3><p>Apparent weapons in footage, flagged for manual review.</p></div>
-        <div class="card"><span class="icon">&#129520;</span><h3>Animal traps</h3><p>Objects resembling snares or traps near wildlife corridors.</p></div>
-        <div class="card"><span class="icon">&#128100;</span><h3>Restricted-area humans</h3><p>People detected where access is prohibited.</p></div>
-        <div class="card"><span class="icon">&#128666;</span><h3>Vehicles</h3><p>Vehicles in areas closed to traffic.</p></div>
-        <div class="card"><span class="icon">&#128062;</span><h3>Wildlife presence</h3><p>Animal detections with species-level ID once a trained model is loaded.</p></div>
-        <div class="card"><span class="icon">&#9888;&#65039;</span><h3>Endangered-species risk</h3><p>Detections co-occurring near protected species raise alert levels.</p></div>
+
+      <div class="why-grid">
+        <div class="editorial-lead">
+          <p>
+            WildShield AI is a decision-support console for forest officers. It watches the
+            footage you cannot be watching, and reports one thing: whether an attack
+            to an animal occurred in the frame.
+          </p>
+          <p>
+            The result is deliberately simple — <strong>Attack Detected</strong> or
+            <strong>No Attack Detected</strong> — alongside evidence and a downloadable
+            report for the record. Detection is only the first step; every finding is meant
+            to be verified by authorized personnel before any field action.
+          </p>
+        </div>
+
+        <div class="principles">
+          <div class="principle">
+            <span class="principle-num">01</span>
+            <div>
+              <h3>Protect</h3>
+              <p>Forest reserves, corridors and wildlife are under continuous pressure. Monitoring turns thinly-spread patrol time into targeted response time.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <span class="principle-num">02</span>
+            <div>
+              <h3>Monitor</h3>
+              <p>Camera footage from the field is uploaded and analyzed automatically — no live feeds required, no staff tied to a screen all day.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <span class="principle-num">03</span>
+            <div>
+              <h3>Respond</h3>
+              <p>Officers receive a clean verdict with a timestamp and a report, so they can decide fast and act with a written record.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== Workflow ===== -->
-  <section class="block" id="workflow">
+  <!-- canopy divider -->
+  <div class="canopy-band" aria-hidden="true">
+    <svg viewBox="0 0 1600 120" preserveAspectRatio="xMidYMax slice" width="100%" height="100%">
+      <path d="M0 60 q120 -30 240 -4 q120 26 250 -10 q130 -36 270 -6 q140 30 280 -12 q140 -42 300 -8 q160 34 280 -16 q120 -50 290 -18 q140 32 260 -8 q120 -40 300 0 L1600 70 L1600 120 0 120 Z" fill="#0d2015"/>
+      <path d="M0 96 q100 -18 200 -4 t180 -8 q120 -6 220 8 t200 -12 q130 -6 240 10 t220 -10 q140 -4 260 8 t240 -6 q120 -10 260 2 L1600 100 1600 120 0 120 Z" fill="#0b1b12"/>
+    </svg>
+  </div>
+
+  <!-- ===== 03 / HOW WILDSHIELD WORKS ===== -->
+  <section class="editorial" id="how" style="background:var(--pine-900);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
     <div class="container">
-      <div class="section-head">
-        <div class="kicker">Pipeline</div>
-        <h2>From footage to report</h2>
+      <div class="sec-head">
+        <span class="sec-index">03</span>
+        <h2>The operational pipeline</h2>
+        <p class="sec-note">One continuous path from raw footage to an alerted officer — nothing hidden, nothing invented.</p>
       </div>
-      <div class="steps">
-        <div class="step"><div><strong>Upload surveillance video</strong><span>.mp4 / .mov / .avi / .mkv / .webm via the web console</span></div></div>
-        <div class="step"><div><strong>Frame extraction</strong><span>Configurable sampling interval - not every frame is processed</span></div></div>
-        <div class="step"><div><strong>YOLO object detection</strong><span>Persons, animals, vehicles, weapons-class objects, traps</span></div></div>
-        <div class="step"><div><strong>Threat analysis</strong><span>Configurable rules map detections to LOW / MEDIUM / HIGH / CRITICAL</span></div></div>
-        <div class="step"><div><strong>Results &amp; timeline</strong><span>Detections table, snapshots, jump-to-timestamp playback</span></div></div>
-        <div class="step"><div><strong>Security report</strong><span>Downloadable PDF for authorized personnel review</span></div></div>
+
+      <div class="pipeline">
+        <div class="pipe">
+          <span class="pipe-code">Ingest / 01</span>
+          <span class="pipe-name">Video</span>
+          <span class="pipe-note">Surveillance footage is uploaded through the console — mp4, mov, avi, mkv, webm, flv or wmv.</span>
+        </div>
+        <div class="pipe">
+          <span class="pipe-code">Inference / 02</span>
+          <span class="pipe-name">AI analysis</span>
+          <span class="pipe-note">Frames are extracted and passed through the YOLO detection and VideoMAE pipelines.</span>
+        </div>
+        <div class="pipe">
+          <span class="pipe-code">Assess / 03</span>
+          <span class="pipe-name">Threat detection</span>
+          <span class="pipe-note">Detections are reduced to a single threat verdict for the monitored footage.</span>
+        </div>
+        <div class="pipe">
+          <span class="pipe-code">Respond / 04</span>
+          <span class="pipe-name">Alert</span>
+          <span class="pipe-note">Officers see the result immediately and can generate a PDF report for the record.</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== Stack ===== -->
-  <section class="block" id="stack">
+  <!-- ===== 04 / SECURITY STATUS ===== -->
+  <section class="editorial" id="status">
     <div class="container">
-      <div class="section-head">
-        <div class="kicker">Architecture</div>
-        <h2>Built on a proven stack</h2>
-      </div>
-      <div class="stack-row">
-        <span class="tag">HTML5 / CSS3 / Vanilla JS</span>
-        <span class="tag">Chart.js</span>
-        <span class="tag">Node.js + Express</span>
-        <span class="tag">MongoDB + Mongoose</span>
-        <span class="tag">JWT + bcrypt</span>
-        <span class="tag">Python FastAPI</span>
-        <span class="tag">OpenCV</span>
-        <span class="tag">Ultralytics YOLO</span>
-        <span class="tag">Docker Compose</span>
+      <div class="status-band">
+        <div class="sb-title">
+          <span class="sec-index">04 / Security status</span>
+          <h3>Platform condition</h3>
+          <p>Live state of the analysis stack, reported by the backend service itself. No figurative meters — only what the system verifies.</p>
+        </div>
+        <div class="board">
+          <div class="board-row">
+            <span class="row-key">API Service</span>
+            <span class="row-val"><span class="led led-dim" id="ledApi"></span> <span id="valApi">Checking…</span></span>
+          </div>
+          <div class="board-row">
+            <span class="row-key">Database</span>
+            <span class="row-val" id="valDb">—</span>
+          </div>
+          <div class="board-row">
+            <span class="row-key">AI Engine</span>
+            <span class="row-val" id="valAi">—</span>
+          </div>
+          <div class="board-row">
+            <span class="row-key">Model Loaded</span>
+            <span class="row-val" id="valModel">—</span>
+          </div>
+          <div class="board-row">
+            <span class="row-key">Belt &middot; Status</span>
+            <span class="row-val" id="statusCell">
+              <span class="status-chip pending" id="systemStatus"><span class="status-dot"></span><span id="systemStatusText">Checking services…</span></span>
+            </span>
+          </div>
+          <div class="board-row">
+            <span class="row-key">Uptime</span>
+            <span class="row-val" id="valUptime">—</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== Disclaimer ===== -->
-  <section class="block">
+  <!-- ===== 05 / ANALYZE ===== -->
+  <section class="editorial" id="analyze" style="padding-top:1rem;">
     <div class="container">
-      <div class="notice">
-        <strong>Important:</strong> All findings produced by WildShield AI are
-        AI-generated detections with confidence scores. They are decision-support
-        signals only and must be verified by authorized personnel before any action.
-        Simulated sample data (demo mode) is always labeled <strong>DEMO DATA</strong>.
+      <div class="cta-band">
+        <h2>Ready to analyze <em>surveillance footage</em>?</h2>
+        <div class="cta-actions">
+          <a class="btn btn-ghost" href="#survey">Back to the feed</a>
+          <a class="btn btn-primary" href="login.html">Sign in and start</a>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ===== Footer ===== -->
-  <footer>
-    <div class="container">
-      <span>WildShield AI &mdash; Wildlife &amp; Forest Security (Phase 1 build)</span>
-      <span id="year"></span>
+  <footer class="site-footer">
+    <div class="container foot-inner">
+      <div class="foot-brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="22" height="22">
+            <path d="M24 11l-4.4 6.8h3.3l-2 8 3.1-5v7.6l2.4-3.6 2.4 3.6v-7.6l3.1 5-2-8h3.3L24 11z" fill="#8fb98f"/>
+          </svg>
+        </span>
+        <span class="brand-lockup">
+          <span class="brand-name" style="font-size:0.92rem;">WildShield<em> AI</em></span>
+          <span class="brand-sub">Forest Protection Console</span>
+        </span>
+      </div>
+      <div class="foot-copy">
+        WildShield AI — video-based threat screening for forest surveillance.
+        AI findings are decision-support signals and must be verified by authorized
+        personnel before any action is taken.
+        <p class="disclaimer" id="year"></p>
+      </div>
     </div>
   </footer>
 
   <script src="js/config.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>

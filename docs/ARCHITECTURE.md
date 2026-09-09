@@ -36,7 +36,8 @@ security. It has three independently deployable parts:
 
 ## Data flow (target, after all phases)
 
-1. Forest official logs in (JWT, roles: ADMIN / FOREST_OFFICIAL / VIEWER).
+1. User logs in via `/api/auth/login` (admin/officer) or `/api/auth/viewer-login`
+   (viewer, username only). JWT + role-based guards: `admin` / `officer` / `viewer`.
 2. Video is uploaded via `POST /api/videos/upload` (Multer, validated type + size).
 3. Backend creates a Video + Analysis record (`status: queued`) and dispatches the
    file to the Python service (`POST /analyze/video`).

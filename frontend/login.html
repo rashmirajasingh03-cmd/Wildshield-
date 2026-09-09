@@ -3,57 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - WildShield AI</title>
+  <title>Console Sign-in — WILDSHIELD AI</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <header class="navbar">
-    <div class="container">
-      <a class="brand" href="index.html">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 2L4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"
-                stroke="#34d399" stroke-width="1.6" fill="rgba(52,211,153,0.08)"/>
-          <path d="M8.5 12l2.2 2.2L15.5 9.5" stroke="#34d399" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        WildShield<span class="ai">&nbsp;AI</span>
-      </a>
-      <nav class="nav-links">
-        <a href="index.html">Back to home</a>
-      </nav>
+  <div class="login-shell">
+    <!-- ===== Left: forest command-centre visual ===== -->
+    <div class="login-visual">
+      <div class="lv-brand">
+        <span class="mark">
+          <svg viewBox="0 0 48 48" fill="none" width="26" height="26" aria-hidden="true">
+            <path d="M24 5.5L8.5 11.5v12.1c0 11 7.2 18.4 15.5 21.4 8.3-3 15.5-10.4 15.5-21.4V11.5L24 5.5z" fill="rgba(111,156,117,0.10)" stroke="#6f9c75" stroke-width="1.6"/>
+            <path d="M24 11l-4.4 6.8h3.3l-2 8 3.1-5v7.6l2.4-3.6 2.4 3.6v-7.6l3.1 5-2-8h3.3L24 11z" fill="#8fb98f" stroke="#C9E0B8" stroke-width="0.8" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">WILDSHIELD<small>AI &middot; Forest Surveillance</small></span>
+      </div>
+
+      <div class="lv-copy">
+        <div class="lv-eyebrow">Restricted Console &middot; Authorized personnel</div>
+        <h1>Protecting the wild,<br /><em>intelligently.</em></h1>
+        <p>
+          WildShield AI screens surveillance footage from forest ranges and reports
+          verified threat verdicts to the officers who act on them.
+        </p>
+        <div class="lv-features">
+          <span>UPLOAD-BASED ANALYSIS</span>
+          <span>YOLO + VIDEO MAE INFERENCE</span>
+          <span>VERIFIED FINDINGS ONLY</span>
+          <span>INSTANT PDF REPORT</span>
+        </div>
+      </div>
+
+      <p class="lv-credit">Surveillance concept in a Tamil Nadu forest setting &mdash; WildShield AI.</p>
     </div>
-  </header>
 
-  <main class="auth-wrap">
-    <div class="auth-card">
-      <h1>Console Login</h1>
-      <p class="sub">Restricted access &mdash; forest department personnel only</p>
+    <!-- ===== Right: access card ===== -->
+    <div class="login-panel">
+      <div class="auth-wrap">
+        <div class="auth-card">
+          <div class="brand-head">
+            <svg viewBox="0 0 48 48" fill="none" width="26" height="26" aria-hidden="true">
+              <path d="M24 5.5L8.5 11.5v12.1c0 11 7.2 18.4 15.5 21.4 8.3-3 15.5-10.4 15.5-21.4V11.5L24 5.5z" fill="rgba(53,119,74,0.10)" stroke="#35774a" stroke-width="1.6"/>
+              <path d="M24 11l-4.4 6.8h3.3l-2 8 3.1-5v7.6l2.4-3.6 2.4 3.6v-7.6l3.1 5-2-8h3.3L24 11z" fill="#35774a"/>
+            </svg>
+            <span class="brand-head-text">WildShield AI</span>
+          </div>
+          <h1>Console Sign-in</h1>
+          <p class="sub">Authorized forest department personnel only</p>
 
-      <form id="loginForm" novalidate>
-        <div class="field">
-          <label for="email">Official email</label>
-          <input type="email" id="email" name="email"
-                 placeholder="officer@forest.gov" autocomplete="username" required />
+          <div class="auth-sep">Select clearance</div>
+
+          <div class="role-tabs" id="roleTabs">
+            <button type="button" class="role-tab active" data-role="admin">Admin</button>
+            <button type="button" class="role-tab" data-role="officer">Officer</button>
+            <button type="button" class="role-tab" data-role="viewer">Viewer</button>
+          </div>
+
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <label for="identifier">Username or email</label>
+              <input type="text" id="identifier" name="identifier"
+                     placeholder="e.g. admin or officer@forest.gov" autocomplete="username" required />
+            </div>
+            <div class="field" id="passwordField">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password"
+                     placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" required minlength="8" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign in</button>
+            <div class="form-msg" id="formMsg" role="alert"></div>
+          </form>
+
+          <div class="auth-foot">
+            Clearances: Admin &middot; Officer &middot; Viewer<br />
+            Admin accounts are pre-provisioned. Officers are registered by the
+            Administrator. Viewers log in with a username only.
+          </div>
         </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password"
-                 placeholder="••••••••" autocomplete="current-password" required minlength="8" />
-        </div>
-        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign in</button>
-        <div class="form-msg" id="formMsg" role="alert"></div>
-      </form>
-
-      <div class="auth-foot">
-        Roles: ADMIN &middot; FOREST_OFFICIAL &middot; VIEWER<br />
-        Accounts are issued by the system administrator.
       </div>
     </div>
-  </main>
+  </div>
 
   <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/login.js"></script>
 </body>
 </html>

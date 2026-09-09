@@ -3,48 +3,20 @@
  * Raw AI detection data (labels, confidence, frames) is never shown.
  */
 (function () {
-  var token = localStorage.getItem('wildshield.token');
-  var userStr = localStorage.getItem('wildshield.user');
-
-  if (!token || !userStr) {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-    return;
-  }
-
-  var user;
-  try {
-    user = JSON.parse(userStr);
-  } catch (e) {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-    return;
-  }
-
+  var auth = window.WildShield.auth;
   var API = window.WildShield.API_BASE;
-  var headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  var token = null;
+  var headers = {};
   var currentPage = 1;
 
-  // Validate token with backend before rendering
-  fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token } })
-    .then(function (res) {
-      if (!res.ok) throw new Error('Invalid');
-      return res.json();
-    })
-    .then(function (data) {
-      if (!data.success || !data.user) throw new Error('Invalid');
-      user = data.user;
-      localStorage.setItem('wildshield.user', JSON.stringify(user));
-      document.getElementById('userInfo').textContent = user.name + ' (' + user.role + ')';
-      initPage();
-    })
-    .catch(function () {
-      localStorage.removeItem('wildshield.token');
-      localStorage.removeItem('wildshield.user');
-      window.location.href = 'login.html';
-    });
+  // OFFICER-only page. Admins/viewers are redirected to their portals.
+  auth.guard(['officer']).then(function (user) {
+    token = auth.getToken();
+    headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+    document.getElementById('userInfo').textContent =
+      user.name + ' (' + auth.label(user.role) + ')';
+    initPage();
+  });
 
   function initPage() {
     var params = new URLSearchParams(window.location.search);
@@ -133,13 +105,11 @@
   function verdictLine(result) {
     var harm = result.verdict === 'ANIMAL_HARM_DETECTED';
     if (harm) {
-      var inc = result.incident || {};
       return '<div class="verdict verdict-harm">' +
-        '<span class="verdict-status">&#9888;&#65039; Animal Harm Detected</span>' +
-        (inc.incident_type ? '<span class="muted">' + inc.incident_type + '</span>' : '') +
+        '<span class="verdict-status">&#9888;&#65039; Attack Detected</span>' +
         '</div>';
     }
-    return '<div class="verdict verdict-clear"><span class="verdict-status">No Threat Detected</span></div>';
+    return '<div class="verdict verdict-clear"><span class="verdict-status">No Attacks Detected</span></div>';
   }
 
   document.getElementById('prevPage').addEventListener('click', function () {
@@ -241,55 +211,13 @@
     // Completed - show ONLY the actionable verdict.
     if (!harm) {
       html += '<div class="detail-result detail-result-clear">' +
-        '<h3 class="result-title">Status: No Threat Detected</h3>' +
-        '<p class="result-message">' + (result.message || 'No animal attack, harm, or abuse was detected in this video.') + '</p>' +
+        '<h3 class="result-title">Status: No Attacks Detected</h3>' +
+        '<p class="result-message">' + (result.message || 'No attacks detected.') + '</p>' +
         '</div>';
     } else {
-      var inc = result.incident || {};
       html += '<div class="detail-result detail-result-harm">' +
-        '<h3 class="result-title">Status: &#9888;&#65039; Animal Harm Detected</h3>' +
-        (inc.incident_type ? '<p class="incident-line"><strong>Type of incident:</strong> ' + inc.incident_type + '</p>' : '') +
+        '<h3 class="result-title">Status: &#9888;&#65039; Attack Detected</h3>' +
         '</div>';
-    }
-
-    // Temporal / VideoMAE analysis panel (additive - never required).
-    var vm = analysis.videomae;
-    if (vm) {
-      html += '<div class="detail-result detail-result-clear" style="margin-top:1rem;">';
-      html += '<h3 class="result-title">Temporal Analysis (VideoMAE)</h3>';
-      if (vm.loaded) {
-        if (vm.action_class) {
-          html += '<p class="incident-line"><strong>Action detected:</strong> ' +
-            vm.action_class.replace(/_/g, ' ') + '</p>';
-          if (vm.action_confidence) {
-            html += '<p class="incident-line"><strong>Action confidence:</strong> ' +
-              Math.round(vm.action_confidence * 100) + '%</p>';
-          }
-        }
-        if (vm.threat_level) {
-          html += '<p class="incident-line"><strong>Threat level:</strong> ' +
-            vm.threat_level + '</p>';
-        }
-        if (vm.animals_detected && vm.animals_detected.length) {
-          html += '<p class="incident-line"><strong>Detected animals:</strong> ' +
-            vm.animals_detected.map(cleanLabel).join(', ') + '</p>';
-        }
-        html += '<p class="incident-line"><strong>Person detected:</strong> ' +
-          (vm.person_detected ? 'Yes' : 'No') + '</p>';
-        html += '<p class="incident-line"><strong>Weapon detected:</strong> ' +
-          (vm.weapon_detected ? 'Yes' : 'No') + '</p>';
-        if (vm.reason) {
-          html += '<p class="incident-line"><strong>Analysis:</strong> ' + vm.reason + '</p>';
-        }
-      } else {
-        html += '<p class="result-message">Action classifier not available ' +
-          (vm.limitation ? '(' + vm.limitation + ')' : '') + '</p>';
-      }
-      if (vm.limitation && vm.loaded) {
-        html += '<p class="muted" style="font-size:0.85rem;margin-top:0.5rem;">' +
-          vm.limitation + '</p>';
-      }
-      html += '</div>';
     }
 
     if (analysis.status === 'completed') {
@@ -375,9 +303,5 @@
     loadList();
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', function () {
-    localStorage.removeItem('wildshield.token');
-    localStorage.removeItem('wildshield.user');
-    window.location.href = 'login.html';
-  });
+  document.getElementById('logoutBtn').addEventListener('click', auth.logout);
 })();

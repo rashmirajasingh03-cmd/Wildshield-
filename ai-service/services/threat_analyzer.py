@@ -46,8 +46,8 @@ from detection.detector import Detection
 
 logger = logging.getLogger(__name__)
 
-MESSAGE_NO_THREAT = "No animal attack, harm, or abuse was detected."
-MESSAGE_HARM = "An animal harm/attack event was detected in this video."
+MESSAGE_NO_THREAT = "No attacks detected."
+MESSAGE_HARM = "Attack detected."
 
 # Relative distance ratio at which two objects count as "engaged/contact".
 CONTACT_RATIO = 0.55

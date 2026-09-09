@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, requireRole, requirePermission } = require('../middleware/auth');
 const {
   uploadMiddleware,
   uploadVideo,
@@ -10,11 +10,13 @@ const {
 
 const router = express.Router();
 
-router.use(authenticate);
+// Video operations are OFFICER-only (AI operations). Admins manage officers,
+// viewers have read-only report access — neither touches video storage.
+router.use(authenticate, requireRole('officer'));
 
-router.post('/', authorize('ADMIN', 'FOREST_OFFICIAL'), uploadMiddleware, uploadVideo);
+router.post('/', requirePermission('videos:upload'), uploadMiddleware, uploadVideo);
 router.get('/', getVideos);
 router.get('/:id', getVideo);
-router.delete('/:id', authorize('ADMIN', 'FOREST_OFFICIAL'), deleteVideo);
+router.delete('/:id', requirePermission('videos:delete'), deleteVideo);
 
 module.exports = router;

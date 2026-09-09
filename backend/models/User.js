@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-
-const ROLES = ['ADMIN', 'FOREST_OFFICIAL', 'VIEWER'];
+const { ROLES, permissionsForRole } = require('../config/permissions');
 
 const userSchema = new mongoose.Schema(
   {
@@ -11,13 +10,32 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: 100,
     },
-    email: {
+    username: {
       type: String,
-      required: [true, 'Email is required'],
+      required: [true, 'Username is required'],
       unique: true,
       lowercase: true,
       trim: true,
+      minlength: 3,
+      maxlength: 50,
+    },
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
+    },
+    officerId: {
+      type: String,
+      trim: true,
+      maxlength: 50,
+      default: null,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+      default: null,
     },
     password: {
       type: String,
@@ -28,7 +46,11 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ROLES,
-      default: 'VIEWER',
+      default: 'viewer',
+    },
+    permissions: {
+      type: [String],
+      default: undefined,
     },
     active: {
       type: Boolean,
@@ -39,8 +61,23 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 12);
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 12);
+  }
+
+  this.permissions = permissionsForRole(this.role);
+
+  // There can be exactly ONE admin account in the whole system.
+  if (this.role === 'admin') {
+    const existingAdmin = await this.constructor.countDocuments({
+      role: 'admin',
+      _id: { $ne: this._id },
+    });
+    if (existingAdmin > 0) {
+      return next(new Error('Only one admin account is allowed.'));
+    }
+  }
+
   next();
 });
 

@@ -178,9 +178,6 @@ exports.getAnalyses = async (req, res, next) => {
 
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
-    if (req.user.role === 'VIEWER') {
-      filter.requestedBy = req.user._id;
-    }
 
     const [analyses, total] = await Promise.all([
       Analysis.find(filter)

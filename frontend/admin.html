@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration — WILDSHIELD AI</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="app-shell">
+    <!-- ===== Slim forest rail ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a class="brand-mark" href="admin.html" aria-label="WildShield AI">
+          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <path d="M24 5.5L8.5 11.5v12.1c0 11 7.2 18.4 15.5 21.4 8.3-3 15.5-10.4 15.5-21.4V11.5L24 5.5z" fill="rgba(111,156,117,0.10)" stroke="#6f9c75" stroke-width="1.6"/>
+            <path d="M24 11l-4.4 6.8h3.3l-2 8 3.1-5v7.6l2.4-3.6 2.4 3.6v-7.6l3.1 5-2-8h3.3L24 11z" fill="#8fb98f" stroke="#C9E0B8" stroke-width="0.8" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <nav class="sidebar-links">
+        <span class="nav-label">Admin</span>
+        <a class="sidebar-link active" href="admin.html">
+          <span class="s-icon">&#128728;</span><span>Officers</span>
+        </a>
+        <span class="nav-label">System</span>
+        <a class="sidebar-link danger" href="#" id="logoutBtn">
+          <span class="s-icon">&#10145;</span><span>Exit</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-user">
+        <span class="sidebar-avatar">A</span>
+        <span class="u-name" id="userInfo">Loading...</span>
+        <span class="u-role">Console Administrator</span>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- ===== Main ===== -->
+    <div class="main-area">
+      <header class="main-top">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">&#9776;</button>
+        <span class="mt-title">Console Administration</span>
+        <div class="mt-actions"></div>
+      </header>
+
+      <main class="main-inner">
+        <div class="dash-header">
+          <div>
+            <div class="page-eyebrow">Personnel &amp; Access</div>
+            <h1>Officer Administration</h1>
+            <p class="sub">Register forest officers, manage clearances and reset credentials.</p>
+          </div>
+        </div>
+
+        <div class="ops-band">
+          <div class="ops-primary">
+            <span class="ops-eyebrow">Belt personnel</span>
+            <span class="ops-title">Officer registry</span>
+            <div class="ops-led-strip" style="margin-top:1rem;">
+              <span class="led-item"><span class="led led-green"></span>Active in registry</span>
+              <span class="led-item"><span class="led led-dim"></span>Some may be disabled</span>
+            </div>
+          </div>
+          <div class="ops-metrics">
+            <div class="ops-metric">
+              <span class="metric-label">Total officers</span>
+              <span class="metric-value tone-neutral" id="statOfficers">--</span>
+              <span class="metric-sub">REGISTERED</span>
+            </div>
+            <div class="ops-metric">
+              <span class="metric-label">Enabled</span>
+              <span class="metric-value tone-neutral" id="statActive">--</span>
+              <span class="metric-sub">CAN SIGN IN</span>
+            </div>
+            <div class="ops-metric">
+              <span class="metric-label">Disabled</span>
+              <span class="metric-value tone-danger" id="statDisabled">--</span>
+              <span class="metric-sub">ACCESS REVOKED</span>
+            </div>
+          </div>
+          <div class="ops-actions">
+            <button class="btn btn-primary" onclick="document.getElementById('officerForm').scrollIntoView({behavior:'smooth'});">Register Officer</button>
+          </div>
+        </div>
+
+        <div class="dash-grid" style="grid-template-columns:0.8fr 1.2fr;">
+          <!-- Registration / edit form -->
+          <div class="dash-panel">
+            <div class="panel-head">
+              <h2 id="officerFormTitle">Register Officer</h2>
+              <span class="section-num">Form / 01</span>
+            </div>
+            <form id="officerForm" novalidate>
+              <div class="field">
+                <label for="of_name">Full name *</label>
+                <input type="text" id="of_name" placeholder="e.g. K. Raghavan" required />
+              </div>
+              <div class="field">
+                <label for="of_username">Username *</label>
+                <input type="text" id="of_username" placeholder="e.g. kraghavan" required />
+              </div>
+              <div class="field">
+                <label for="of_password">Temporary password * (8+ char)</label>
+                <input type="password" id="of_password" placeholder="Set an initial password" />
+              </div>
+              <div class="field">
+                <label for="of_officerId">Officer ID</label>
+                <input type="text" id="of_officerId" placeholder="e.g. OF-2024-112" />
+              </div>
+              <div class="field">
+                <label for="of_phone">Phone</label>
+                <input type="text" id="of_phone" placeholder="e.g. 944xxxxxxxx" />
+              </div>
+              <div class="field">
+                <label for="of_email">Email</label>
+                <input type="email" id="of_email" placeholder="e.g. ragavan@forest.gov" />
+              </div>
+              <div class="dash-actions">
+                <button type="submit" class="btn btn-primary" id="of_submit">Register Officer</button>
+                <button type="button" class="btn btn-ghost" id="of_cancel" style="display:none;">Cancel</button>
+              </div>
+              <div class="form-msg" id="of_msg" role="alert"></div>
+            </form>
+            <div class="notice mt-3">
+              Passwords are stored hashed only. Viewers are separate accounts and are
+              not managed here.
+            </div>
+          </div>
+
+          <!-- Registry -->
+          <div class="dash-panel">
+            <div class="panel-head">
+              <h2>&#128728; Approved Officers</h2>
+              <span class="section-num">Registry / Live</span>
+            </div>
+            <div id="officersList">
+              <p class="muted">Loading officers...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('menuToggle').addEventListener('click', function () {
+      document.body.classList.toggle('sidebar-open');
+    });
+    document.getElementById('sidebarBackdrop').addEventListener('click', function () {
+      document.body.classList.remove('sidebar-open');
+    });
+  </script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -349,7 +349,7 @@ async def analyze_video(req: AnalyzeVideoRequest):
             status="completed",
             result={
                 "verdict": "NO_THREAT",
-                "message": "No animal attack, harm, or abuse was detected.",
+                "message": "No attacks detected.",
                 "incident": None,
                 "incidents_count": 0,
                 **fusion,

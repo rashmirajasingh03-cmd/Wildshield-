@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 360" preserveAspectRatio="xMidYMax slice" width="1600" height="360">
+  <!-- Layered forest + mountain silhouettes for WILDSHIELD AI -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1810"/>
+      <stop offset="100%" stop-color="#0b160f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- far ridge -->
+  <g fill="#12261b" opacity="0.55">
+    <path d="M0 300 L120 214 210 268 330 168 452 258 560 196 690 262 810 158 930 246 1050 178 1170 252 1300 172 1420 250 1600 188 1600 360 0 360 Z"/>
+  </g>
+
+  <!-- mid canopy band -->
+  <g fill="#0f2116" opacity="0.8">
+    <path d="M0 330 Q80 288 160 318 Q240 348 330 310 Q430 268 520 306 Q610 344 700 304 Q800 262 900 308 Q990 342 1090 300 Q1190 260 1290 306 Q1380 340 1480 310 Q1560 288 1600 300 L1600 360 0 360 Z"/>
+  </g>
+
+  <!-- foreground pines -->
+  <g fill="#0a140d">
+    <path d="M80 360 L118 250 140 250 112 300 146 300 116 360 Z"/>
+    <path d="M210 360 L252 238 276 238 248 292 286 292 254 360 Z"/>
+    <path d="M352 360 L392 260 414 260 386 306 422 306 392 360 Z"/>
+    <path d="M500 360 L544 232 570 232 540 292 580 292 546 360 Z"/>
+    <path d="M652 360 L694 252 718 252 690 302 726 302 696 360 Z"/>
+    <path d="M820 360 L862 240 886 240 858 298 896 298 866 360 Z"/>
+    <path d="M976 360 L1018 262 1040 262 1014 306 1050 306 1022 360 Z"/>
+    <path d="M1130 360 L1170 246 1194 246 1166 302 1204 302 1174 360 Z"/>
+    <path d="M1280 360 L1322 256 1346 256 1318 304 1356 304 1326 360 Z"/>
+    <path d="M1430 360 L1472 242 1496 242 1468 300 1506 300 1476 360 Z"/>
+  </g>
+
+  <!-- distant birds -->
+  <g fill="none" stroke="#172b1e" stroke-width="3" opacity="0.7">
+    <path d="M300 120 q10 -8 20 0 q10 8 20 0"/>
+    <path d="M1280 90 q8 -7 16 0 q8 7 16 0"/>
+  </g>
+</svg>

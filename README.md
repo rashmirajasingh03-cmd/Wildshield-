@@ -32,7 +32,10 @@ endangered wildlife.
 Wildshield/
 ├── frontend/          Static HTML/CSS/JS console
 │   ├── index.html     Landing page
-│   ├── login.html     Login page (connects in Phase 3)
+│   ├── login.html     Three-role login (Admin / Officer / Viewer)
+│   ├── admin.html     Admin console — officer management
+│   ├── dashboard.html Officer console — AI monitoring & reports
+│   ├── viewer.html    Viewer portal — read-only reports
 │   ├── css/ js/ assets/
 ├── backend/           Node.js + Express API
 │   ├── server.js      App entry (security middleware, health, static hosting)
@@ -90,16 +93,68 @@ Any of:
 The backend starts even without MongoDB (degraded mode) so frontend/API work
 is never blocked during development.
 
-### 4. Seed admin user (Phase 3)
+### 4. Seed accounts
 
 ```powershell
 cd backend
 npm run seed
 ```
 
-Default admin credentials (change after first login):
-- Email: `admin@wildshield.gov`
-- Password: `WildShield@2026`
+Creates the ONE admin plus one sample officer (change passwords after first
+login). Viewers are never seeded — anyone can enter via username-only login.
+
+| Role | Username | Password |
+| --- | --- | --- |
+| Admin | `admin` | `WildShield@2026` |
+| Officer | `officer` | `Officer@2026` |
+| Viewer | any username | *(none — no password)* |
+
+### 5. Migrate existing database (roles + usernames)
+
+Run once after upgrading from an older build:
+
+```powershell
+cd backend
+node scripts/migrate-roles.js   # moves ADMIN->admin, FOREST_OFFICIAL->officer, VIEWER->viewer
+```
+
+## Roles & permissions
+
+Roles: `admin` (officer management only) · `officer` (AI operations) ·
+`viewer` (read-only reports). Enforcement is server-side on every API route —
+hiding UI buttons is not the security boundary.
+
+| Feature | Admin | Officer | Viewer |
+| --- | :---: | :---: | :---: |
+| Login | username/email + password | username/email + password | username only |
+| Registration (public) | ❌ | ❌ | ❌ |
+| Register / manage officers | ✅ | ❌ | ❌ |
+| Upload / delete videos | ❌ | ✅ | ❌ |
+| Run AI detection / monitor | ❌ | ✅ | ❌ |
+| View analyses / dashboard | ❌ | ✅ | ❌ |
+| View reports | ❌ | ✅ | ✅ |
+| Generate PDF reports | ❌ | ✅ | ❌ |
+| Download PDF reports | ❌ | ✅ | ✅ |
+
+Admin console: `/admin.html` · Officer console: `/dashboard.html` · Viewer
+portal: `/viewer.html`
+
+Key API surfaces:
+
+- `POST /api/auth/login` — admin/officer (identifier = username or email)
+- `POST /api/auth/viewer-login` — viewer (username only, no password)
+- `/api/admin/officers` (CRUD, password reset, enable/disable) — **admin only**
+- `/api/videos`, `/api/analysis`, `/api/reports` — **officer** (reports read/download also **viewer**)
+
+Security rules hard-coded in this model:
+
+- Exactly ONE admin account exists — enforced in `User` pre-save and there is
+  no endpoint that can mint one. Officer creation is hard-forced to `officer`.
+- No public registration endpoint. No role-change API. Login role is always
+  resolved from stored data, never trusted from the request body.
+- Passwords are bcrypt-hashed (cost 12); passwords are never stored in
+  plaintext and never returned by the API.
+- Viewers cannot take over an admin/officer username via viewer login.
 
 ### 5. Docker Compose (all-in-one)
 

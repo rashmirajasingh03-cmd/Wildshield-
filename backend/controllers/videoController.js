@@ -100,9 +100,6 @@ exports.getVideos = async (req, res, next) => {
 
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
-    if (req.user.role === 'VIEWER') {
-      filter.uploadedBy = req.user._id;
-    }
 
     const [videos, total] = await Promise.all([
       Video.find(filter)
@@ -156,10 +153,7 @@ exports.deleteVideo = async (req, res, next) => {
         .json({ success: false, message: 'Video not found.' });
     }
 
-    if (
-      video.uploadedBy.toString() !== req.user._id.toString() &&
-      req.user.role !== 'ADMIN'
-    ) {
+    if (video.uploadedBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this video.',
