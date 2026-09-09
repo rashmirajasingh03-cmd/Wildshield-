@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: wildshield-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://wildshield.onrender.com
+      - key: AI_SERVICE_URL
+        value: http://wildshield-ai:8000
+    healthCheckPath: /health
+
+  - type: web
+    name: wildshield-ai
+    runtime: docker
+    dockerfilePath: ai-service/Dockerfile
+    envVars:
+      - key: AI_ENV
+        value: production
+      - key: AI_PORT
+        value: 8000
+      - key: MODEL_PATH
+        value: models/yolo11n.pt
+      - key: DEMO_MODE
+        value: "false"
+    healthCheckPath: /health
+
+  - type: database
+    name: wildshield-db
+    plan: starter
+    databaseName: wildshield
