@@ -3,6 +3,7 @@ services:
     name: wildshield-backend
     runtime: docker
     dockerfilePath: backend/Dockerfile
+    plan: free
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,15 +14,18 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://wildshield.onrender.com
+        value: https://wildshield-backend.onrender.com
       - key: AI_SERVICE_URL
         value: http://wildshield-ai:8000
+      - key: STATIC_FRONTEND
+        value: "true"
     healthCheckPath: /health
 
   - type: web
     name: wildshield-ai
     runtime: docker
     dockerfilePath: ai-service/Dockerfile
+    plan: free
     envVars:
       - key: AI_ENV
         value: production
@@ -30,7 +34,7 @@ services:
       - key: MODEL_PATH
         value: models/yolo11n.pt
       - key: DEMO_MODE
-        value: "false"
+        value: "true"
     healthCheckPath: /health
 
 
