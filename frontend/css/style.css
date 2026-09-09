@@ -855,7 +855,7 @@ body.sidebar-open .sidebar-backdrop { display: block; }
   font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.3em;
   color: rgba(226,123,112,0.75); margin-bottom: 0.9rem;
 }
-.drop-zone:hover, .drop-zone.dragover {
+.drop-zone:hover, .drop-zone.dragover, .drop-zone.drag-over {
   border-color: var(--leaf);
   background: rgba(111,156,117,0.06);
 }
@@ -1216,4 +1216,63 @@ body.sidebar-open .sidebar-backdrop { display: block; }
   .analysis-card-body { align-items: flex-start; }
   .detail-card { padding: 1.3rem; }
   .status-band, .cta-band { padding: 1.5rem 1.2rem; }
+}
+
+/* ------------------------------------------------------------------ */
+/* 26. CONSOLE FOREST ATMOSPHERE                                        */
+/* Applies the home-page / login-page territory (dark cinematic forest  */
+/* with scanline veil + topographic trace) to every console page via a  */
+/* single .app-shell scope — no per-page HTML needed.                    */
+/* ------------------------------------------------------------------ */
+.app-shell {
+  position: relative;
+  background-color: var(--pine-950);
+  background-image:
+    linear-gradient(180deg, rgba(7,16,10,0.72) 0%, rgba(7,16,10,0.86) 100%),
+    url("../assets/forest-bg.jpg");
+  background-size: cover;
+  background-position: center 22%;
+  background-attachment: fixed;
+}
+
+/* scanline veil over the backdrop (mirrors .hero-scan / login-visual) */
+.app-shell::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 1;
+  background: repeating-linear-gradient(0deg, rgba(233,242,226,0.022) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+
+/* topographic trace rising from the bottom edge (echoes forest.svg) */
+.app-shell::after {
+  content: "";
+  position: fixed; left: 0; right: 0; bottom: 0; height: 190px; z-index: 1;
+  background: url("../assets/forest.svg") center bottom / 1400px auto repeat-x;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.main-area { position: relative; z-index: 2; }
+
+/* oversight zone stamp in every console top bar — same mono voice as the
+   landing hero / login eyebrow */
+.main-top::before {
+  content: "WILDSHIELD AI · FOREST SURVEILLANCE BELT";
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.24em;
+  color: var(--leaf-soft); text-transform: uppercase;
+  border-right: 1px solid var(--line); padding-right: 1rem;
+  white-space: nowrap;
+}
+
+/* warm gold trim on work surfaces — the same gold used across login/home */
+.dash-panel, .upload-card, .detail-card {
+  border-top: 2px solid rgba(211,162,78,0.30);
+}
+
+@media (max-width: 1100px) {
+  .main-top::before { content: "FOREST SURVEILLANCE BELT"; }
+}
+@media (max-width: 900px) {
+  .main-top::before { display: none; }
+  .app-shell { background-attachment: scroll; }
 }
